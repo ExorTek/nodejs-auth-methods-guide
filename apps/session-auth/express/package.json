@@ -1,0 +1,16 @@
+{
+  "name": "@auth-guide/session-auth-express",
+  "version": "1.0.0",
+  "description": "Session-based authentication with Express.js",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*",
+    "connect-redis": "^9.0.0",
+    "express-session": "^1.19.0"
+  }
+}

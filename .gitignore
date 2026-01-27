@@ -7,12 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+**/**/.env
+
+**/**/node_modules
 **dist
 .yarn
 
 # Editor directories and files
 .vscode
 .idea
+.DS_Store
+
 
 

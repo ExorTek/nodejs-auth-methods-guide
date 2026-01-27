@@ -1,1 +1,1 @@
-# nodejs-auth-methods-guide
+# Node.js Authentication Methods Complete Guide

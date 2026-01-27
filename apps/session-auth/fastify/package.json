@@ -1,0 +1,17 @@
+{
+  "name": "@auth-guide/session-auth-fastify",
+  "version": "1.0.0",
+  "description": "Session-based authentication with Fastify",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/redis": "^7.1.0",
+    "@fastify/session": "^11.1.1"
+  }
+}

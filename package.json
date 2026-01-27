@@ -1,10 +1,68 @@
 {
-  "name": "nodejs-auth-methods-guide",
-  "packageManager": "yarn@4.12.0",
+  "name": "auth-guide",
+  "description": "A comprehensive guide to authentication methods in Node.js applications with production-ready examples",
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "format": "prettier --write ."
   },
+  "workspaces": [
+    "apps/*/*",
+    "apps/*"
+  ],
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/helmet": "^13.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "fastify": "^5.7.2",
+    "helmet": "^8.1.0",
+    "mongoose": "^9.1.5",
+    "redis": "^5.10.0"
+  },
   "devDependencies": {
     "prettier": "^3.8.1"
+  },
+  "author": {
+    "name": "ExorTek",
+    "url": "https://github.com/ExorTek"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/ExorTek/nodejs-auth-methods-guide#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExorTek/nodejs-auth-methods-guide.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ExorTek/nodejs-auth-methods-guide/issues"
+  },
+  "keywords": [
+    "authentication",
+    "authorization",
+    "nodejs",
+    "express",
+    "fastify",
+    "jwt",
+    "oauth",
+    "session",
+    "security",
+    "webauthn",
+    "passkeys",
+    "web3",
+    "blockchain",
+    "mfa",
+    "2fa",
+    "saml",
+    "oidc",
+    "turkish",
+    "guide",
+    "tutorial",
+    "production-ready"
+  ],
+  "packageManager": "yarn@4.12.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "yarn": ">=4.0.0"
   }
 }
