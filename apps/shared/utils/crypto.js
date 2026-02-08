@@ -96,15 +96,15 @@ const verifyHmac = (data, signature, secret) => {
 
 /**
  * Encrypt data using AES-256-GCM
- * @NOTE: DONT USE THIS FOR LARGE DATA AND PRODUCTION, JUST FOR DEMO PURPOSES
+ * @NOTE: FOR DEMO PURPOSES ONLY - not suitable for large data in production
  * @param {string} plaintext - Data to encrypt
- * @param {string} secret - Encryption key (32 bytes recommended)
+ * @param {string} secret - Encryption key
  * @returns {string} Encrypted data (iv:authTag:ciphertext in hex)
  */
 const encrypt = (plaintext, secret) => {
-  const key = crypto.scryptSync(secret, 'salt', 16);
+  const key = crypto.scryptSync(secret, 'salt', 32);
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-128-gcm', key, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
   let encrypted = cipher.update(plaintext, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -116,7 +116,7 @@ const encrypt = (plaintext, secret) => {
 
 /**
  * Decrypt data using AES-256-GCM
- * @NOTE: DONT USE THIS FOR LARGE DATA AND PRODUCTION, JUST FOR DEMO PURPOSES
+ * @NOTE: FOR DEMO PURPOSES ONLY - not suitable for large data in production
  * @param {string} encryptedData - Encrypted data (iv:authTag:ciphertext in hex)
  * @param {string} secret - Encryption key
  * @returns {string} Decrypted plaintext
@@ -124,12 +124,12 @@ const encrypt = (plaintext, secret) => {
 const decrypt = (encryptedData, secret) => {
   const [ivHex, authTagHex, encryptedHex] = encryptedData.split(':');
 
-  const key = crypto.scryptSync(secret, 'salt', 16);
+  const key = crypto.scryptSync(secret, 'salt', 32);
   const iv = Buffer.from(ivHex, 'hex');
   const authTag = Buffer.from(authTagHex, 'hex');
   const encrypted = Buffer.from(encryptedHex, 'hex');
 
-  const decipher = crypto.createDecipheriv('aes-128-gcm', key, iv);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
   decipher.setAuthTag(authTag);
 
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');

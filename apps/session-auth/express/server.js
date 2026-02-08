@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createExpressApp, connectMongoDB, connectRedis, expressErrorHandler } from '@auth-guide/shared';
+import { createExpressApp, connectMongoDB, connectRedis, expressErrorHandler, logger } from '@auth-guide/shared';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import authRoutes from './routes/auth.routes.js';
@@ -32,5 +32,5 @@ app.use('/api/auth', authRoutes);
 app.use(expressErrorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  logger.info(`Server running on http://localhost:${PORT}`);
 });

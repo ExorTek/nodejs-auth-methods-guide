@@ -36,6 +36,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   await loginSchema.validate(req.body);
+
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -63,16 +64,20 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      throw new CustomError('Logout failed', 500, true, 'LOGOUT_FAILED');
-    }
-
-    res.clearCookie('connect.sid');
-    res.status(200).json({
-      success: true,
-      message: 'Logged out successfully',
+  await new Promise((resolve, reject) => {
+    req.session.destroy(err => {
+      if (err) {
+        reject(new CustomError('Logout failed', 500, true, 'LOGOUT_FAILED'));
+        return;
+      }
+      resolve();
     });
+  });
+
+  res.clearCookie('connect.sid');
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully',
   });
 };
 

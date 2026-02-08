@@ -6,7 +6,8 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test test.js"
   },
   "dependencies": {
     "@auth-guide/shared": "workspace:*",

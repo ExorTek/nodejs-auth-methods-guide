@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createFastifyApp, connectMongoDB, connectRedis } from '@auth-guide/shared';
+import { createFastifyApp, connectMongoDB } from '@auth-guide/shared';
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
 import fastifyRedis from '@fastify/redis';

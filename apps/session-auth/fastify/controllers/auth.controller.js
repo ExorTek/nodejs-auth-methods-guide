@@ -1,7 +1,9 @@
 import User from '../models/User.js';
-import { hashPassword, verifyPassword, CustomError } from '@auth-guide/shared';
+import { hashPassword, verifyPassword, CustomError, registerSchema, loginSchema } from '@auth-guide/shared';
 
 const register = async (request, reply) => {
+  await registerSchema.validate(request.body);
+
   const { username, email, password } = request.body;
 
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -32,6 +34,8 @@ const register = async (request, reply) => {
 };
 
 const login = async (request, reply) => {
+  await loginSchema.validate(request.body);
+
   const { email, password } = request.body;
 
   const user = await User.findOne({ email });
@@ -59,15 +63,11 @@ const login = async (request, reply) => {
 };
 
 const logout = async (request, reply) => {
-  request.session.destroy(err => {
-    if (err) {
-      throw new CustomError('Logout failed', 500, true, 'LOGOUT_FAILED');
-    }
+  await request.session.destroy();
 
-    return reply.code(200).send({
-      success: true,
-      message: 'Logged out successfully',
-    });
+  return reply.code(200).send({
+    success: true,
+    message: 'Logged out successfully',
   });
 };
 
@@ -90,4 +90,4 @@ const getCurrentUser = async (request, reply) => {
   });
 };
 
-export { logout, getCurrentUser, login, register };
+export { register, login, logout, getCurrentUser };
