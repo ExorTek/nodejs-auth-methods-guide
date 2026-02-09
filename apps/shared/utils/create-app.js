@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import pinoHttp from 'pino-http';
-import { expressRequestId, fastifyRequestId } from '../middleware/request-id.js';
+import { expressRequestId, fastifyRequestId } from '../middleware/index.js';
 import { fastifyErrorHandler } from './error-handlers.js';
 import { logger } from './index.js';
 

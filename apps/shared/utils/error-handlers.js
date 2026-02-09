@@ -20,90 +20,66 @@ const defaultMessages = {
     'A database error occurred while processing your request. Please try again later or contact support if the issue persists.',
 };
 
-/**
- * Normalize any error into a CustomError with proper status code and message
- * @param {Error} error - Original error
- * @returns {CustomError} Normalized error
- */
-const normalizeError = error => {
-  // Already a CustomError with explicit code
-  if (error instanceof CustomError) {
-    return error;
-  }
+/** JWT library error name → { statusCode, message, code } */
+const jwtErrorMap = {
+  TokenExpiredError: { statusCode: 401, message: 'Access token expired', code: 'TOKEN_EXPIRED' },
+  JsonWebTokenError: { statusCode: 401, message: 'Invalid access token', code: 'INVALID_TOKEN' },
+  NotBeforeError: { statusCode: 401, message: 'Access token not yet active', code: 'TOKEN_NOT_ACTIVE' },
+};
+
+const expressErrorHandler = (err, req, res, next) => {
+  logger.error(err);
+
+  let customError = err;
 
   // CORS error
-  if (error.message === 'Invalid origin') {
-    return new CustomError('You are not allowed to access this resource!', 403, true, PUBLIC_ERROR_CODES.FORBIDDEN);
+  if (err.message === 'Invalid origin') {
+    customError = new CustomError(
+      'You are not allowed to access this resource!',
+      403,
+      true,
+      PUBLIC_ERROR_CODES.FORBIDDEN,
+    );
+  }
+
+  // JWT errors (TokenExpiredError, JsonWebTokenError, NotBeforeError)
+  if (err.name in jwtErrorMap) {
+    const mapped = jwtErrorMap[err.name];
+    customError = new CustomError(mapped.message, mapped.statusCode, true, mapped.code);
   }
 
   // Default error messages for common error types
-  if (error.name in defaultMessages) {
-    return new CustomError(defaultMessages[error.name], 400, true, error.name.toUpperCase());
+  if (err.name in defaultMessages) {
+    customError = new CustomError(defaultMessages[err.name], 400, true, err.name.toUpperCase());
   }
 
   // MongoDB duplicate key error
-  if (error.code === 11000) {
-    return new CustomError(
-      getDuplicateKeyErrorMessage(error.message, error.keyValue),
+  if (err.code === 11000) {
+    customError = new CustomError(
+      getDuplicateKeyErrorMessage(err.message, err.keyValue),
       400,
       true,
       PUBLIC_ERROR_CODES.DUPLICATE_KEY,
     );
   }
 
-  // Validation errors (Yup, Mongoose)
-  if (error.errors) {
+  // Validation errors
+  if (err.errors) {
     let customErrorMessage = '';
-    if (error.params?.spec) {
-      customErrorMessage = capitalizeFirstLetter(error.errors[0]);
+    if (err.params?.spec) {
+      customErrorMessage = capitalizeFirstLetter(err.errors[0]);
     } else {
-      const errorMessage = error.message.includes('Cast to [ObjectId]')
-        ? `Invalid argument: ${error.message.split('"')[1]}`
-        : error.errors[Object.keys(error.errors)[0]].message;
+      const errorMessage = err.message.includes('Cast to [ObjectId]')
+        ? `Invalid argument: ${err.message.split('"')[1]}`
+        : err.errors[Object.keys(err.errors)[0]].message;
       if (errorMessage.includes('BSONError')) {
         customErrorMessage = `Invalid argument: ${errorMessage.split('"')[1]}`;
       } else {
         customErrorMessage = errorMessage;
       }
     }
-    return new CustomError(customErrorMessage, 400, true, PUBLIC_ERROR_CODES.VALIDATION_ERROR);
+    customError = new CustomError(customErrorMessage, 400, true, PUBLIC_ERROR_CODES.VALIDATION_ERROR);
   }
-
-  // Solana-specific errors (for Web3 article)
-  if (error.message.includes('Non-base58 character')) {
-    return new CustomError(
-      'You entered an incorrect public key! Please make sure you entered the public key of your Solana wallet correctly.',
-      400,
-      true,
-      PUBLIC_ERROR_CODES.INVALID_PUBLIC_KEY,
-    );
-  }
-
-  if (error.message.includes('Invalid param: WrongSize')) {
-    return new CustomError(
-      'Invalid signature! Please make sure you entered the correct signature.',
-      400,
-      true,
-      PUBLIC_ERROR_CODES.INVALID_SIGNATURE,
-    );
-  }
-
-  if (error.message.includes('Invalid params: invalid type: integer `1`, expected a string.')) {
-    return new CustomError(
-      'Invalid signature! Please make sure you entered the correct signature.',
-      400,
-      true,
-      PUBLIC_ERROR_CODES.INVALID_SIGNATURE,
-    );
-  }
-
-  return error;
-};
-
-const expressErrorHandler = (err, req, res, next) => {
-  logger.error(err);
-
-  const customError = normalizeError(err);
 
   const response = {
     success: false,
@@ -126,7 +102,56 @@ const expressErrorHandler = (err, req, res, next) => {
 const fastifyErrorHandler = (error, request, reply) => {
   logger.error(error);
 
-  const customError = normalizeError(error);
+  let customError = error;
+
+  // CORS error
+  if (error.message === 'Invalid origin') {
+    customError = new CustomError(
+      'You are not allowed to access this resource!',
+      403,
+      true,
+      PUBLIC_ERROR_CODES.FORBIDDEN,
+    );
+  }
+
+  // JWT errors (TokenExpiredError, JsonWebTokenError, NotBeforeError)
+  if (error.name in jwtErrorMap) {
+    const mapped = jwtErrorMap[error.name];
+    customError = new CustomError(mapped.message, mapped.statusCode, true, mapped.code);
+  }
+
+  // Default error messages for common error types
+  if (error.name in defaultMessages) {
+    customError = new CustomError(defaultMessages[error.name], 400, true, error.name.toUpperCase());
+  }
+
+  // MongoDB duplicate key error
+  if (error.code === 11000) {
+    customError = new CustomError(
+      getDuplicateKeyErrorMessage(error.message, error.keyValue),
+      400,
+      true,
+      PUBLIC_ERROR_CODES.DUPLICATE_KEY,
+    );
+  }
+
+  // Validation errors
+  if (error.errors) {
+    let customErrorMessage = '';
+    if (error.params?.spec) {
+      customErrorMessage = capitalizeFirstLetter(error.errors[0]);
+    } else {
+      const errorMessage = error.message.includes('Cast to [ObjectId]')
+        ? `Invalid argument: ${error.message.split('"')[1]}`
+        : error.errors[Object.keys(error.errors)[0]].message;
+      if (errorMessage.includes('BSONError')) {
+        customErrorMessage = `Invalid argument: ${errorMessage.split('"')[1]}`;
+      } else {
+        customErrorMessage = errorMessage;
+      }
+    }
+    customError = new CustomError(customErrorMessage, 400, true, PUBLIC_ERROR_CODES.VALIDATION_ERROR);
+  }
 
   const response = {
     success: false,
@@ -146,4 +171,4 @@ const fastifyErrorHandler = (error, request, reply) => {
   return reply.code(response.statusCode).send(response);
 };
 
-export { normalizeError, expressErrorHandler, fastifyErrorHandler };
+export { expressErrorHandler, fastifyErrorHandler };

@@ -11,7 +11,7 @@ const register = async (request, reply) => {
     throw new CustomError('User already exists', 409, true, 'USER_EXISTS');
   }
 
-  const hashedPassword = await hashPassword(password);
+  const hashedPassword = await hashPassword(password, process.env.PASSWORD_PEPPER);
 
   const user = await User.create({
     username,
@@ -43,7 +43,7 @@ const login = async (request, reply) => {
     throw new CustomError('Invalid credentials', 401, true, 'INVALID_CREDENTIALS');
   }
 
-  const isPasswordValid = await verifyPassword(user.password, password);
+  const isPasswordValid = await verifyPassword(user.password, password, process.env.PASSWORD_PEPPER);
   if (!isPasswordValid) {
     throw new CustomError('Invalid credentials', 401, true, 'INVALID_CREDENTIALS');
   }

@@ -1,0 +1,14 @@
+{
+  "name": "@auth-guide/jwt-auth-express",
+  "version": "1.0.0",
+  "description": "JWT authentication with access & refresh tokens using Express.js",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*"
+  }
+}
