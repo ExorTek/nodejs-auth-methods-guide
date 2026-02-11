@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant Attacker
+    participant Client
+    participant API
+    participant DB
+    
+    Note over Client,DB: Normal Login Flow
+    Client->>API: POST /auth/login
+    API->>DB: Create Token A<br/>family: "abc123"
+    API-->>Client: Token A
+    
+    Note over Attacker: Token Stolen!
+    Attacker->>Attacker: Steals Token A<br/>(but doesn't use it yet)
+    
+    Note over Client,DB: Legitimate Refresh
+    Client->>API: POST /auth/refresh<br/>Token A
+    API->>DB: Find Token A
+    DB-->>API: Found, not revoked
+    
+    API->>DB: Revoke Token A<br/>replacedBy: Token B
+    API->>DB: Create Token B<br/>family: "abc123" (same)
+    API-->>Client: Token B (new)
+    
+    Note over Attacker: Attacker Tries Stolen Token
+    Attacker->>API: POST /auth/refresh<br/>Token A (revoked!)
+    API->>DB: Find Token A
+    DB-->>API: Found, but isRevoked = true
+    
+    rect rgb(255, 200, 200)
+        Note over API: REUSE DETECTED!<br/>Compromised token used
+        API->>DB: REVOKE ALL tokens<br/>with family "abc123"
+        API->>DB: Token B also revoked!
+    end
+    
+    API-->>Attacker: 401 Token Reuse Detected<br/>All sessions revoked
+    
+    Note over Client: Legitimate user also affected
+    Client->>API: GET /api/resource<br/>Token B
+    API-->>Client: 401 Unauthorized<br/>(Token B revoked)
+    
+    Client->>Client: Realizes session killed
+    Client->>API: POST /auth/login<br/>Re-authenticate
+    
+    Note over Attacker: Attacker blocked<br/>No valid tokens left

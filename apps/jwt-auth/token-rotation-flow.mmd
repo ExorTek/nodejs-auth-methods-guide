@@ -1,0 +1,59 @@
+sequenceDiagram
+    participant Client
+    participant API
+    participant DB
+
+    Note over Client,DB: 1. Initial Login
+    Client->>API: POST /auth/login<br/>email + password
+    API->>DB: Verify credentials
+    DB-->>API: User found ✓
+
+    API->>API: Generate Access Token (JWT, 15min)<br/>Generate Refresh Token (opaque, 7d)
+    API->>DB: Store SHA-256 hash of Refresh Token A<br/>family: "x7k9m", generation: 1
+
+    API-->>Client: 200 OK<br/>Authorization: Bearer access_token<br/>X-Refresh-Token: refresh_token_A
+
+    Note over Client,DB: 2. Normal API Calls (0–15 min)
+    Client->>API: GET /api/profile<br/>Authorization: Bearer access_token
+    API->>API: Verify JWT signature + expiry
+    API-->>Client: 200 OK { user data }
+
+    Note over Client,DB: 3. Access Token Expires (15 min)
+    Client->>API: GET /api/profile<br/>Authorization: Bearer access_token
+    API-->>Client: 401 Token Expired
+
+    Note over Client,DB: 4. Token Rotation — Round 1
+    Client->>API: POST /auth/refresh<br/>X-Refresh-Token: refresh_token_A
+    API->>DB: Find token by SHA-256 hash
+    DB-->>API: Token A found ✓<br/>isRevoked: false, family: "x7k9m"
+
+    rect rgb(232, 245, 233)
+        Note over API,DB: Rotation Process
+        API->>DB: Revoke Token A<br/>isRevoked: true, replacedBy: B
+        API->>API: Generate new Access Token (15min)<br/>Generate new Refresh Token B
+        API->>DB: Store Token B hash<br/>family: "x7k9m", generation: 2
+    end
+
+    API-->>Client: 200 OK<br/>Authorization: Bearer new_access_token<br/>X-Refresh-Token: refresh_token_B
+    Client->>Client: Replace stored tokens
+
+    Note over Client,DB: 5. Normal API Calls Resume
+    Client->>API: GET /api/orders<br/>Authorization: Bearer new_access_token
+    API-->>Client: 200 OK { orders }
+
+    Note over Client,DB: 6. Token Rotation — Round 2
+    Client->>API: POST /auth/refresh<br/>X-Refresh-Token: refresh_token_B
+    API->>DB: Find Token B
+    DB-->>API: Token B found ✓<br/>isRevoked: false, family: "x7k9m"
+
+    rect rgb(232, 245, 233)
+        Note over API,DB: Rotation Process
+        API->>DB: Revoke Token B<br/>isRevoked: true, replacedBy: C
+        API->>API: Generate new token pair
+        API->>DB: Store Token C hash<br/>family: "x7k9m", generation: 3
+    end
+
+    API-->>Client: 200 OK<br/>new access + refresh_token_C
+
+    Note over Client,DB: Token Chain in Database
+    Note over DB: Token A → gen:1, revoked, replacedBy: B<br/>Token B → gen:2, revoked, replacedBy: C<br/>Token C → gen:3, active<br/>All share family: "x7k9m"

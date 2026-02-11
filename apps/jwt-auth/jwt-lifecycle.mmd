@@ -1,0 +1,23 @@
+flowchart TD
+    A[User Login Request] --> B{Credentials Valid?}
+    B -->|No| C[401 Unauthorized]
+    B -->|Yes| D[Generate Access Token]
+    
+    D --> E[Sign with Secret Key<br/>HS256]
+    E --> F[JWT Created<br/>Header.Payload.Signature]
+    
+    F --> G[Set Expiry<br/>exp: 15 minutes]
+    G --> H[Return to Client]
+    
+    H --> I[Client Stores Token<br/>Memory / Storage]
+    
+    I --> J[Client Makes API Request<br/>Authorization: Bearer token]
+    
+    J --> K{Token Verification}
+    K -->|Invalid Signature| L[401 Invalid Token]
+    K -->|Expired| M[401 Token Expired]
+    K -->|Valid| N[Decode Payload]
+    
+    N --> O[Extract userId, username]
+    O --> P[Process Request]
+    P --> Q[Return Response]

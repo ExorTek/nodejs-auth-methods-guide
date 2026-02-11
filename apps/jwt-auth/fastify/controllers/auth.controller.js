@@ -13,9 +13,25 @@ import {
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
-const REFRESH_EXPIRY_DAYS = parseInt(process.env.JWT_REFRESH_EXPIRY_DAYS, 10) || 7;
-const PASSWORD_PEPPER = process.env.PASSWORD_PEPPER || undefined;
 const ALLOW_MULTI_DEVICE = process.env.ALLOW_MULTI_DEVICE !== 'false';
+
+/**
+ * Parse REFRESH_EXPIRY_DAYS — handles 0 correctly (parseInt(x)||7 treats 0 as falsy)
+ */
+const parseRefreshExpiry = () => {
+  const parsed = parseInt(process.env.JWT_REFRESH_EXPIRY_DAYS, 10);
+  return Number.isNaN(parsed) ? 7 : parsed;
+};
+const REFRESH_EXPIRY_DAYS = parseRefreshExpiry();
+
+/**
+ * Pepper is mandatory in production — silent fallback is a security risk.
+ * In development, it's optional for convenience.
+ */
+const PASSWORD_PEPPER = process.env.PASSWORD_PEPPER || undefined;
+if (process.env.NODE_ENV === 'production' && !process.env.PASSWORD_PEPPER) {
+  throw new Error('PASSWORD_PEPPER is required in production — refusing to start without it');
+}
 
 /**
  * Extract refresh token from X-Refresh-Token header
@@ -154,8 +170,12 @@ const login = async (request, reply) => {
  * POST /api/auth/refresh
  * Refresh token via X-Refresh-Token header
  *
- * Rotation: old token revoked, new token issued (same family)
+ * Rotation: old token revoked atomically, new token issued (same family)
  * Reuse detection: revoked token reused → entire family nuked
+ *
+ * Race condition fix: findOneAndUpdate ensures only one concurrent request
+ * wins the rotation. Second request sees null (already revoked) and gets
+ * a clean 401 without false reuse detection that would nuke the family.
  */
 const refresh = async (request, reply) => {
   const rawToken = extractRefreshToken(request);
@@ -164,15 +184,18 @@ const refresh = async (request, reply) => {
     throw new CustomError('Refresh token is required', 401, true, 'MISSING_REFRESH_TOKEN');
   }
 
-  const storedToken = await RefreshToken.findByToken(rawToken);
+  const tokenHash = sha256(rawToken);
 
-  if (!storedToken) {
+  // Step 1: Check if token exists at all (needed for reuse detection)
+  const existingToken = await RefreshToken.findOne({ tokenHash });
+
+  if (!existingToken) {
     throw new CustomError('Invalid refresh token', 401, true, 'INVALID_REFRESH_TOKEN');
   }
 
   // REUSE DETECTION — revoked token used again, compromise detected
-  if (storedToken.isRevoked) {
-    await RefreshToken.revokeFamilyTokens(storedToken.family);
+  if (existingToken.isRevoked) {
+    await RefreshToken.revokeFamilyTokens(existingToken.family);
     throw new CustomError(
       'Refresh token reuse detected — all sessions for this device revoked',
       401,
@@ -182,29 +205,44 @@ const refresh = async (request, reply) => {
   }
 
   // Expired check (belt-and-suspenders, MongoDB TTL handles cleanup)
-  if (storedToken.expiresAt < new Date()) {
-    await RefreshToken.revokeFamilyTokens(storedToken.family);
+  if (existingToken.expiresAt < new Date()) {
+    await RefreshToken.revokeFamilyTokens(existingToken.family);
     throw new CustomError('Refresh token expired', 401, true, 'REFRESH_TOKEN_EXPIRED');
   }
 
-  const user = await User.findById(storedToken.userId);
-  if (!user) {
-    await RefreshToken.revokeFamilyTokens(storedToken.family);
-    throw new CustomError('User not found', 401, true, 'USER_NOT_FOUND');
-  }
-
-  // Rotate: revoke old, create new with same family
+  // Step 2: Atomic rotation — only one concurrent request wins
+  // findOneAndUpdate with isRevoked:false ensures atomicity:
+  // - First request: finds token, revokes it, gets old doc back
+  // - Second request (parallel): isRevoked is already true, returns null
   const newRawRefreshToken = generateToken(40);
   const newTokenHash = sha256(newRawRefreshToken);
 
-  storedToken.isRevoked = true;
-  storedToken.replacedByHash = newTokenHash;
-  await storedToken.save();
+  const revokedToken = await RefreshToken.findOneAndUpdate(
+    { tokenHash, isRevoked: false },
+    { isRevoked: true, replacedByHash: newTokenHash },
+    { new: false },
+  );
+
+  // Another request already rotated this token — not reuse, just race condition
+  if (!revokedToken) {
+    throw new CustomError(
+      'Token already rotated — please use the latest refresh token',
+      401,
+      true,
+      'TOKEN_ALREADY_ROTATED',
+    );
+  }
+
+  const user = await User.findById(revokedToken.userId);
+  if (!user) {
+    await RefreshToken.revokeFamilyTokens(revokedToken.family);
+    throw new CustomError('User not found', 401, true, 'USER_NOT_FOUND');
+  }
 
   await RefreshToken.create({
     tokenHash: newTokenHash,
     userId: user._id,
-    family: storedToken.family,
+    family: revokedToken.family,
     expiresAt: new Date(Date.now() + REFRESH_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
     userAgent: request.headers['user-agent'] || null,
     ip: request.ip || null,

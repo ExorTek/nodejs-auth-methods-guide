@@ -1,0 +1,35 @@
+graph TB
+    User[User Account<br/>userId: 123] --> Device1[Device 1: Web Browser]
+    User --> Device2[Device 2: Mobile App]
+    User --> Device3[Device 3: Desktop App]
+    
+    Device1 --> Login1[Login Event]
+    Device2 --> Login2[Login Event]
+    Device3 --> Login3[Login Event]
+    
+    Login1 --> Family1[Token Family: abc]
+    Login2 --> Family2[Token Family: def]
+    Login3 --> Family3[Token Family: ghi]
+    
+    Family1 --> Token1A[Token A1<br/>family: abc]
+    Family1 --> Token1B[Token A2<br/>family: abc<br/>replaces A1]
+    Family1 --> Token1C[Token A3<br/>family: abc<br/>replaces A2]
+    
+    Family2 --> Token2A[Token B1<br/>family: def]
+    Family2 --> Token2B[Token B2<br/>family: def<br/>replaces B1]
+    
+    Family3 --> Token3A[Token C1<br/>family: ghi]
+    
+    subgraph Database
+        DB[(Refresh Tokens)]
+        DB --> Active1[A3: Active<br/>family: abc<br/>userAgent: Chrome<br/>ip: 192.168.1.10]
+        DB --> Active2[B2: Active<br/>family: def<br/>userAgent: iOS App<br/>ip: 10.0.0.5]
+        DB --> Active3[C1: Active<br/>family: ghi<br/>userAgent: Desktop<br/>ip: 192.168.1.20]
+        DB --> Revoked1[A1: Revoked<br/>replacedBy: A2]
+        DB --> Revoked2[A2: Revoked<br/>replacedBy: A3]
+        DB --> Revoked3[B1: Revoked<br/>replacedBy: B2]
+    end
+    
+    Note1[Logout from Device 1<br/>→ Revoke family 'abc'] -.-> Family1
+    Note2[Logout All Devices<br/>→ Revoke all families] -.-> User
+    Note3[Reuse Detection in family 'def'<br/>→ Revoke entire family 'def'] -.-> Family2

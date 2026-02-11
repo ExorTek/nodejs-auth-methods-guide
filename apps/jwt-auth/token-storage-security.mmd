@@ -1,0 +1,25 @@
+graph TB
+    Token[JWT Token<br/>Where to Store?] --> Choice1[localStorage]
+    Token --> Choice2[sessionStorage]
+    Token --> Choice3[Memory Variable]
+    Token --> Choice4[httpOnly Cookie]
+    
+    Choice1 --> LS_Pros["✅ Persists across tabs<br/>✅ Survives page reload<br/>✅ Simple to implement"]
+    Choice1 --> LS_Cons["❌ XSS vulnerable<br/>❌ Accessible via JS<br/>❌ Shared across all tabs"]
+    
+    Choice2 --> SS_Pros["✅ Isolated per tab<br/>✅ Survives page reload<br/>✅ Simple to implement"]
+    Choice2 --> SS_Cons["❌ XSS vulnerable<br/>❌ Not shared across tabs<br/>❌ Accessible via JS"]
+    
+    Choice3 --> MV_Pros["✅ Not accessible via XSS<br/>✅ No persistence risk<br/>✅ Most secure"]
+    Choice3 --> MV_Cons["❌ Lost on page reload<br/>❌ Need refresh token<br/>❌ More complex"]
+    
+    Choice4 --> HC_Pros["✅ XSS protected<br/>✅ Auto-sent by browser<br/>✅ Secure flag support"]
+    Choice4 --> HC_Cons["❌ CSRF risk<br/>❌ Browser-only<br/>❌ Complex CORS setup"]
+    
+    LS_Cons --> Verdict1[⚠️ Not Recommended<br/>for sensitive apps]
+    SS_Cons --> Verdict2[⚠️ Not Recommended<br/>for multi-tab apps]
+    MV_Cons --> Verdict3[✅ Recommended<br/>for SPAs + Refresh Token]
+    HC_Cons --> Verdict4[✅ Recommended<br/>for browser-only apps]
+    
+    Verdict3 --> Best[Best Practice:<br/>Access Token in Memory<br/>Refresh Token in httpOnly Cookie]
+    Verdict4 --> Best

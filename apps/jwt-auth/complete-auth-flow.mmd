@@ -1,0 +1,48 @@
+flowchart TD
+    Start([User Opens App]) --> CheckToken{Has Valid<br/>Access Token?}
+    
+    CheckToken -->|No| Login[Show Login Page]
+    Login --> Submit[User Submits<br/>Email & Password]
+    
+    Submit --> API1[POST /auth/login]
+    API1 --> Verify{Credentials<br/>Valid?}
+    
+    Verify -->|No| Error401[401 Invalid Credentials]
+    Error401 --> Login
+    
+    Verify -->|Yes| GenTokens[Generate Token Pair]
+    GenTokens --> AccessTok[Access Token<br/>JWT, 15min]
+    GenTokens --> RefreshTok[Refresh Token<br/>Opaque, 7 days]
+    
+    RefreshTok --> HashStore[Hash & Store<br/>in Database]
+    HashStore --> Return200[200 OK<br/>Return both tokens]
+    
+    Return200 --> StoreClient[Client Stores Tokens]
+    CheckToken -->|Yes| StoreClient
+    
+    StoreClient --> APICall[Make API Request<br/>Authorization: Bearer token]
+    
+    APICall --> VerifyAccess{Access Token<br/>Valid?}
+    
+    VerifyAccess -->|Invalid Signature| Err401[401 Unauthorized]
+    Err401 --> Login
+    
+    VerifyAccess -->|Expired| RefreshFlow[Token Refresh Flow]
+    
+    RefreshFlow --> SendRefresh[POST /auth/refresh<br/>X-Refresh-Token: refresh]
+    SendRefresh --> VerifyRefresh{Refresh Token<br/>Valid?}
+    
+    VerifyRefresh -->|Not Found| Login
+    VerifyRefresh -->|Revoked| ReuseDetect[Reuse Detected!<br/>Revoke Family]
+    ReuseDetect --> Login
+    
+    VerifyRefresh -->|Expired| Login
+    
+    VerifyRefresh -->|Valid| Rotate[Token Rotation]
+    Rotate --> NewTokens[New Access + Refresh]
+    NewTokens --> RevokeOld[Revoke Old Refresh]
+    RevokeOld --> StoreClient
+    
+    VerifyAccess -->|Valid| ProcessReq[Process Request]
+    ProcessReq --> Response[Return Response]
+    Response --> APICall

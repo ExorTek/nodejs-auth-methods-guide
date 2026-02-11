@@ -1,0 +1,30 @@
+graph TD
+    Start{Choose Auth Method} --> Q1{Multiple Client<br/>Platforms?}
+    
+    Q1 -->|Yes<br/>Web + Mobile + Desktop| JWT1[Consider JWT]
+    Q1 -->|No<br/>Browser Only| Q2{Need Stateless<br/>Scalability?}
+    
+    Q2 -->|Yes<br/>Microservices| JWT2[Consider JWT]
+    Q2 -->|No| Q3{Immediate Revoke<br/>Required?}
+    
+    Q3 -->|Yes<br/>Banking, Security| Session1[Use Session-Based]
+    Q3 -->|No| Q4{Project Complexity?}
+    
+    Q4 -->|Simple<br/>Quick MVP| Session2[Use Session-Based]
+    Q4 -->|Complex<br/>Long-term| JWT3[Consider JWT]
+    
+    JWT1 --> JWTCheck{Ready for<br/>Complexity?}
+    JWT2 --> JWTCheck
+    JWT3 --> JWTCheck
+    
+    JWTCheck -->|Yes| JWTFinal[✅ Use JWT +<br/>Refresh Token]
+    JWTCheck -->|No| Hybrid[Use Session +<br/>Plan Migration]
+    
+    Session1 --> SessionFinal[✅ Use Session-Based<br/>with Redis]
+    Session2 --> SessionFinal
+    
+    JWTFinal --> JWTFeatures[Features:<br/>• Stateless verify<br/>• Multi-platform<br/>• Scalable<br/>• Complex setup]
+    
+    SessionFinal --> SessionFeatures[Features:<br/>• Instant revoke<br/>• Simple setup<br/>• DB dependency<br/>• Browser-focused]
+    
+    Hybrid --> HybridFeatures[Transition Strategy:<br/>• Start with Session<br/>• Add JWT gradually<br/>• Support both]

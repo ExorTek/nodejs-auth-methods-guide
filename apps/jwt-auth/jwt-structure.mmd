@@ -1,0 +1,21 @@
+graph LR
+    A[JWT Token] --> B[Header]
+    A --> C[Payload]
+    A --> D[Signature]
+    
+    B --> B1["alg: HS256<br/>typ: JWT"]
+    B1 --> B2[Base64URL Encoded]
+    
+    C --> C1["userId: 65f1a2b3<br/>username: memet<br/>iat: 1709123456<br/>exp: 1709124356"]
+    C1 --> C2[Base64URL Encoded]
+    
+    D --> D1[HMAC-SHA256]
+    D1 --> D2["hash(<br/>  base64(header) + '.' +<br/>  base64(payload),<br/>  SECRET_KEY<br/>)"]
+    
+    B2 --> E[eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9]
+    C2 --> F[eyJ1c2VySWQiOiI2NWYxYTJiMyIsInVzZXJuYW1lIjoibWVtZXQiLCJpYXQiOjE3MDkxMjM0NTYsImV4cCI6MTcwOTEyNDM1Nn0]
+    D2 --> G[SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c]
+    
+    E --> H["Final Token:<br/>Header.Payload.Signature"]
+    F --> H
+    G --> H
