@@ -7,7 +7,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",
-    "test": "node --test test.js"
+    "test": "node --test *.test.js"
   },
   "dependencies": {
     "@auth-guide/shared": "workspace:*",

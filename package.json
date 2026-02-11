@@ -4,7 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "session:express": "yarn workspace @auth-guide/session-auth-express dev",
+    "session:fastify": "yarn workspace @auth-guide/session-auth-fastify dev",
+    "jwt:express": "yarn workspace @auth-guide/jwt-auth-express dev",
+    "jwt:fastify": "yarn workspace @auth-guide/jwt-auth-fastify dev",
+    "test": "echo \"Run specific tests with: yarn session:test:express, yarn session:test:fastify, yarn jwt:test:express, or yarn jwt:test:fastify\"",
+    "session:test:express": "yarn workspace @auth-guide/session-auth-express test",
+    "session:test:fastify": "yarn workspace @auth-guide/session-auth-fastify test",
+    "jwt:test:express": "yarn workspace @auth-guide/jwt-auth-express test",
+    "jwt:test:fastify": "yarn workspace @auth-guide/jwt-auth-fastify test"
   },
   "workspaces": [
     "apps/*/*",

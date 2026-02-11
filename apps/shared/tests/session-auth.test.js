@@ -1,25 +1,14 @@
 /**
  * Shared test utility for authentication endpoints
  * Uses Node.js built-in test runner (node:test) and fetch API
- * Zero external dependencies - works with Node.js 20+
  *
  * Usage:
- *   import { runAuthTests } from '@auth-guide/shared/tests/auth.test.js';
+ *   import { runSessionAuthTests } from '@auth-guide/shared/tests/session-auth.test.js';
  *   runAuthTests({ baseUrl: 'http://localhost:3000', framework: 'Express' });
  */
 
-import { describe, it, before, after } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-
-/**
- * Extract cookies from response headers
- * @param {Response} response - Fetch response
- * @returns {string} Cookie string for subsequent requests
- */
-const extractCookies = response => {
-  const setCookie = response.headers.getSetCookie?.() || [];
-  return setCookie.map(c => c.split(';')[0]).join('; ');
-};
 
 /**
  * Make an authenticated request with cookies
@@ -64,12 +53,22 @@ const generateTestUser = () => {
 };
 
 /**
+ * Extract cookies from response headers
+ * @param {Response} response - Fetch response
+ * @returns {string} Cookie string for subsequent requests
+ */
+const extractCookies = response => {
+  const setCookie = response.headers.getSetCookie?.() || [];
+  return setCookie.map(c => c.split(';')[0]).join('; ');
+};
+
+/**
  * Run all authentication tests against a server
  * @param {Object} config
  * @param {string} config.baseUrl - Server base URL (e.g., http://localhost:3000)
  * @param {string} config.framework - Framework name for test descriptions
  */
-const runAuthTests = ({ baseUrl, framework }) => {
+const runSessionAuthTests = ({ baseUrl, framework }) => {
   const API = `${baseUrl}/api/auth`;
   const testUser = generateTestUser();
   let authCookies = '';
@@ -312,4 +311,4 @@ const runAuthTests = ({ baseUrl, framework }) => {
   });
 };
 
-export { runAuthTests, request, extractCookies, generateTestUser };
+export default runSessionAuthTests;
