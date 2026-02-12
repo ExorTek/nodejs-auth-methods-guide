@@ -94,6 +94,16 @@ All implementations follow these practices:
 - JSDoc comments on public functions
 - Clean error handling via custom error classes
 
+**⚠️ DISCLAIMER / UYARI**
+
+> This repository is an **educational resource** created for an article series on authentication methods.
+> The code is designed to **demonstrate concepts and patterns**, not to be used as-is in production.
+> Do not copy-paste this code into your projects without a thorough security review specific to your use case.
+>
+> Bu repo, authentication yöntemlerini anlatan bir makale serisi için hazırlanmış **eğitim amaçlı** bir kaynaktır.
+> Kodlar **kavram ve pattern gösterimi** için tasarlanmıştır, production'da olduğu gibi kullanılmak için değil.
+> Kendi projenize uygulamadan önce güvenlik gereksinimlerinize özel bir inceleme yapmanız şiddetle tavsiye edilir.
+
 ## 📄 License
 
 MIT License. See [LICENSE](LICENSE) for details.
