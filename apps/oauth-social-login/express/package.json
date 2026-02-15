@@ -1,0 +1,16 @@
+{
+  "name": "oauth-social-login-express",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.1.0",
+    "mongoose": "^8.12.1"
+  }
+}

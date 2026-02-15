@@ -96,11 +96,6 @@ const register = async (request, reply) => {
     password: hashedPassword,
   });
 
-  // Single-device mode: revoke all existing sessions before creating new one
-  if (!ALLOW_MULTI_DEVICE) {
-    await RefreshToken.revokeUserTokens(user._id);
-  }
-
   const { accessToken, refreshToken } = await createTokenPair({
     userId: user._id.toString(),
     username: user.username,
