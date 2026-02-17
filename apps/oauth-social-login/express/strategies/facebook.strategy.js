@@ -5,7 +5,7 @@ const facebookStrategy = new FacebookStrategy(
   {
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: 'http://localhost:3000/api/auth/passport/facebook/callback',
+    callbackURL: process.env.FACEBOOK_REDIRECT_URI_PASSPORT,
     profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
   },
   async (accessToken, refreshToken, profile, done) => {

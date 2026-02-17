@@ -150,10 +150,6 @@ const tokenLogin = async (req, res) => {
   // Step 1: Verify token with Facebook's debug_token endpoint
   // Requires app access token (FACEBOOK_APP_ID|FACEBOOK_APP_SECRET)
   // This proves the token is valid AND was issued for our app
-  const debugParams = new URLSearchParams({
-    input_token: accessToken,
-    access_token: `${FACEBOOK_APP_ID}|${FACEBOOK_APP_SECRET}`,
-  });
 
   const { data: debugData } = await axios
     .get(FACEBOOK_URLS.tokenDebug, {
