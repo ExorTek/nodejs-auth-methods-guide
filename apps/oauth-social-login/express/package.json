@@ -1,16 +1,14 @@
 {
-  "name": "oauth-social-login-express",
+  "name": "@auth-guide/oauth-social-login-express",
   "version": "1.0.0",
+  "description": "OAuth 2.0 social login with Google and Facebook — manual implementation without Passport.js",
   "type": "module",
+  "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "test": "node --test *.test.js"
   },
   "dependencies": {
-    "@auth-guide/shared": "workspace:*",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "helmet": "^8.1.0",
-    "mongoose": "^8.12.1"
+    "@auth-guide/shared": "workspace:*"
   }
 }

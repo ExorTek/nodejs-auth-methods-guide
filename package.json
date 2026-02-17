@@ -9,11 +9,15 @@
     "session:fastify": "yarn workspace @auth-guide/session-auth-fastify dev",
     "jwt:express": "yarn workspace @auth-guide/jwt-auth-express dev",
     "jwt:fastify": "yarn workspace @auth-guide/jwt-auth-fastify dev",
+    "oauth:express": "yarn workspace @auth-guide/oauth-social-login-express dev",
+    "oauth:fastify": "yarn workspace @auth-guide/oauth-social-login-fastify dev",
     "test": "echo \"Run specific tests with: yarn session:test:express, yarn session:test:fastify, yarn jwt:test:express, or yarn jwt:test:fastify\"",
     "session:test:express": "yarn workspace @auth-guide/session-auth-express test",
     "session:test:fastify": "yarn workspace @auth-guide/session-auth-fastify test",
     "jwt:test:express": "yarn workspace @auth-guide/jwt-auth-express test",
-    "jwt:test:fastify": "yarn workspace @auth-guide/jwt-auth-fastify test"
+    "jwt:test:fastify": "yarn workspace @auth-guide/jwt-auth-fastify test",
+    "oauth:test:express": "yarn workspace @auth-guide/oauth-social-login-express test",
+    "oauth:test:fastify": "yarn workspace @auth-guide/oauth-social-login-fastify test"
   },
   "workspaces": [
     "apps/*/*",
@@ -22,12 +26,16 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
+    "axios": "^1.13.5",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "fastify": "^5.7.2",
     "helmet": "^8.1.0",
     "mongoose": "^9.1.5",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
     "redis": "^5.10.0"
   },
   "devDependencies": {

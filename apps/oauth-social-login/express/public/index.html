@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Social Login — Test Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #080c14;
+        --bg-card: #0e1420;
+        --bg-input: #080c14;
+        --border: #1a2235;
+        --border-hover: #2a3550;
+        --text: #e2e8f4;
+        --text-dim: #8896b0;
+        --text-muted: #4a5568;
+        --google: #4285f4;
+        --facebook: #1877f2;
+        --green: #22d3a0;
+        --purple: #9b72ff;
+        --red: #ff5252;
+        --amber: #fbbf24;
+        --cyan: #22d3ee;
+        --mono: 'JetBrains Mono', monospace;
+        --sans: 'Syne', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 52px 1fr;
+      }
+
+      /* ── Header ─────────────────────────── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: rgba(8, 12, 20, 0.9);
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, var(--purple), var(--cyan));
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+
+      header h1 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      header h1 span {
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red);
+        transition: all 0.3s;
+      }
+
+      .dot.on {
+        background: var(--green);
+        box-shadow: 0 0 8px rgba(34, 211, 160, 0.5);
+      }
+
+      /* ── Layout ─────────────────────────── */
+      main {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        overflow-y: auto;
+        border-right: 1px solid var(--border);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .console-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        overflow: hidden;
+      }
+
+      /* ── Cards ──────────────────────────── */
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.7rem 0.9rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s;
+      }
+
+      .card-head:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .badge {
+        font-family: var(--mono);
+        font-size: 0.58rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.12rem 0.4rem;
+        border-radius: 4px;
+      }
+
+      .badge-web {
+        background: rgba(66, 133, 244, 0.15);
+        color: var(--google);
+      }
+      .badge-mobile {
+        background: rgba(34, 211, 160, 0.15);
+        color: var(--green);
+      }
+      .badge-server {
+        background: rgba(155, 114, 255, 0.15);
+        color: var(--purple);
+      }
+      .badge-local {
+        background: rgba(251, 191, 36, 0.15);
+        color: var(--amber);
+      }
+
+      .chevron {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        transition: transform 0.2s;
+      }
+
+      .chevron.open {
+        transform: rotate(90deg);
+      }
+
+      .card-body {
+        padding: 0.8rem 0.9rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .card-body.hidden {
+        display: none;
+      }
+
+      .card-desc {
+        font-size: 0.73rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 0.25rem;
+      }
+
+      /* ── Buttons ─────────────────────────── */
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.55rem 0.8rem;
+        border: none;
+        border-radius: 7px;
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        color: #fff;
+        width: 100%;
+      }
+
+      .btn:active {
+        transform: scale(0.97);
+      }
+
+      .btn-google {
+        background: var(--google);
+      }
+      .btn-google:hover {
+        background: #3b78e7;
+      }
+      .btn-facebook {
+        background: var(--facebook);
+      }
+      .btn-facebook:hover {
+        background: #1464d8;
+      }
+      .btn-green {
+        background: var(--green);
+        color: #000;
+      }
+      .btn-green:hover {
+        filter: brightness(0.9);
+      }
+      .btn-purple {
+        background: var(--purple);
+      }
+      .btn-purple:hover {
+        filter: brightness(0.9);
+      }
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: var(--border-hover);
+      }
+      .btn-red {
+        background: rgba(255, 82, 82, 0.12);
+        color: var(--red);
+        border: 1px solid rgba(255, 82, 82, 0.2);
+      }
+      .btn-red:hover {
+        background: rgba(255, 82, 82, 0.2);
+      }
+
+      .row {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .row .btn {
+        flex: 1;
+      }
+
+      .method {
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      /* ── Inputs ──────────────────────────── */
+      input {
+        width: 100%;
+        padding: 0.5rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--bg-input);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 0.78rem;
+        transition: border-color 0.15s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--purple);
+      }
+
+      input::placeholder {
+        color: var(--text-muted);
+      }
+
+      label {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .sep {
+        border-top: 1px solid var(--border);
+        margin: 0.2rem 0;
+      }
+
+      /* ── Console ─────────────────────────── */
+      .console-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+      }
+
+      .console-top h2 {
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--text-dim);
+      }
+
+      .console-top h2 span {
+        color: var(--purple);
+      }
+
+      #log {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .entry {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        animation: pop 0.18s ease;
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .entry-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.45rem 0.7rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .ok {
+        color: var(--green);
+      }
+      .err {
+        color: var(--red);
+      }
+
+      .entry-time {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text-muted);
+      }
+
+      .entry-body {
+        padding: 0.55rem 0.7rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-dim);
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+
+      .empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        color: var(--text-muted);
+        gap: 0.5rem;
+        font-size: 0.8rem;
+      }
+
+      .empty-icon {
+        font-size: 2rem;
+        opacity: 0.4;
+      }
+
+      /* ── Scrollbar ───────────────────────── */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      @media (max-width: 768px) {
+        main {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 400px;
+        }
+        .sidebar {
+          max-height: none;
+          overflow-y: visible;
+        }
+        .console-panel {
+          border-top: 1px solid var(--border);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <div class="logo">🔐</div>
+        <h1>OAuth Social Login <span>— Test Dashboard</span></h1>
+      </div>
+      <div class="status">
+        <div
+          class="dot"
+          id="dot"></div>
+        <span id="statusText">not logged in</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ── Sidebar ── -->
+      <div class="sidebar">
+        <!-- Social Login — Manual -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">
+              🌐 Social Login
+              <span class="badge badge-web">MANUAL</span>
+            </div>
+            <span class="chevron open">▶</span>
+          </div>
+          <div class="card-body">
+            <p class="card-desc">Manuel OAuth 2.0 implementasyonu. Browser redirect → code exchange → ticket → JWT.</p>
+            <a
+              href="/api/auth/google"
+              class="btn btn-google">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Google ile Giriş (Manuel)
+            </a>
+            <a
+              href="/api/auth/facebook"
+              class="btn btn-facebook">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Facebook ile Giriş (Manuel)
+            </a>
+          </div>
+        </div>
+
+        <!-- Social Login — Passport.js -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">
+              🛂 Passport.js
+              <span class="badge badge-web">PASSPORT</span>
+            </div>
+            <span class="chevron">▶</span>
+          </div>
+          <div class="card-body hidden">
+            <p class="card-desc">
+              Passport.js ile aynı flow. State yönetimi ve code exchange Passport tarafından hallediliyor.
+            </p>
+            <a
+              href="/api/auth/passport/google"
+              class="btn btn-google">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              Google ile Giriş (Passport)
+            </a>
+            <a
+              href="/api/auth/passport/facebook"
+              class="btn btn-facebook">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor">
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Facebook ile Giriş (Passport)
+            </a>
+          </div>
+        </div>
+
+        <!-- Mobile SDK -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">
+              📱 Mobile SDK
+              <span class="badge badge-mobile">MOBILE</span>
+            </div>
+            <span class="chevron">▶</span>
+          </div>
+          <div class="card-body hidden">
+            <p class="card-desc">Native SDK'dan gelen token ile doğrulama. Google id_token, Facebook access_token.</p>
+            <div class="field">
+              <label>Google id_token</label>
+              <input
+                type="text"
+                id="googleIdToken"
+                placeholder="Google SDK id_token" />
+            </div>
+            <button
+              class="btn btn-google"
+              onclick="googleTokenLogin()">
+              <span class="method">POST</span> /auth/google/token
+            </button>
+            <div class="sep"></div>
+            <div class="field">
+              <label>Facebook access_token</label>
+              <input
+                type="text"
+                id="fbToken"
+                placeholder="Facebook SDK access_token" />
+            </div>
+            <button
+              class="btn btn-facebook"
+              onclick="facebookTokenLogin()">
+              <span class="method">POST</span> /auth/facebook/token
+            </button>
+          </div>
+        </div>
+
+        <!-- Local Auth -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">
+              🔑 Local Auth
+              <span class="badge badge-local">NO KEYS</span>
+            </div>
+            <span class="chevron">▶</span>
+          </div>
+          <div class="card-body">
+            <p class="card-desc">Email + şifre ile kayıt ve giriş. OAuth key'i olmadan test için.</p>
+            <div class="field">
+              <label>username</label>
+              <input
+                type="text"
+                id="username"
+                value="testuser" />
+            </div>
+            <div class="field">
+              <label>email</label>
+              <input
+                type="email"
+                id="email"
+                value="test@mail.com" />
+            </div>
+            <div class="field">
+              <label>password</label>
+              <input
+                type="password"
+                id="password"
+                value="Test@1234" />
+            </div>
+            <div class="row">
+              <button
+                class="btn btn-green"
+                onclick="doRegister()">
+                Register
+              </button>
+              <button
+                class="btn btn-green"
+                onclick="doLogin()">
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">👤 Session</div>
+            <span class="chevron">▶</span>
+          </div>
+          <div class="card-body hidden">
+            <button
+              class="btn btn-ghost"
+              onclick="getMe()">
+              <span class="method">GET</span> /me — Kimim?
+            </button>
+            <button
+              class="btn btn-ghost"
+              onclick="getSessions()">
+              <span class="method">GET</span> /sessions — Aktif oturumlar
+            </button>
+            <button
+              class="btn btn-ghost"
+              onclick="doRefresh()">
+              <span class="method">POST</span> /refresh — Token yenile
+            </button>
+            <div class="sep"></div>
+            <div class="row">
+              <button
+                class="btn btn-red"
+                onclick="doLogout()">
+                Logout
+              </button>
+              <button
+                class="btn btn-red"
+                onclick="doLogoutAll()">
+                Logout All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OAuth Provider -->
+        <div class="card">
+          <div
+            class="card-head"
+            onclick="toggle(this)">
+            <div class="card-title">
+              🏗️ OAuth Provider
+              <span class="badge badge-server">OUR SERVER</span>
+            </div>
+            <span class="chevron">▶</span>
+          </div>
+          <div class="card-body hidden">
+            <p class="card-desc">Bizim sunucumuz OAuth provider olarak. Sırayla 4 adımı çalıştır.</p>
+            <button
+              class="btn btn-purple"
+              onclick="registerClient()">
+              <span class="method">POST</span> 1. Client Kaydet
+            </button>
+            <button
+              class="btn btn-purple"
+              onclick="authorizeClient()">
+              <span class="method">GET</span> 2. Authorize → Code Al
+            </button>
+            <div class="field">
+              <label>authorization code</label>
+              <input
+                type="text"
+                id="authCode"
+                placeholder="2. adımdan otomatik dolar"
+                readonly />
+            </div>
+            <button
+              class="btn btn-purple"
+              onclick="exchangeCode()">
+              <span class="method">POST</span> 3. Code → Token
+            </button>
+            <button
+              class="btn btn-purple"
+              onclick="getUserinfo()">
+              <span class="method">GET</span> 4. UserInfo al
+            </button>
+            <div class="sep"></div>
+            <button
+              class="btn btn-red"
+              onclick="revokeToken()">
+              Provider Token İptal
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Console ── -->
+      <div class="console-panel">
+        <div class="console-top">
+          <h2>📟 <span>Console</span></h2>
+          <button
+            class="btn btn-ghost"
+            onclick="clearLog()"
+            style="width: auto; padding: 0.3rem 0.7rem; font-size: 0.72rem">
+            Temizle
+          </button>
+        </div>
+        <div id="log">
+          <div class="empty">
+            <div class="empty-icon">⚡</div>
+            Endpoint'e tıkla, sonuçlar burada görünür
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ── State (memory only — no localStorage) ────────────
+      let at = '';
+      let rt = '';
+      let providerClientId = '';
+      let providerClientSecret = '';
+      let providerAt = '';
+
+      // ── UI ────────────────────────────────────────────────
+      function toggle(head) {
+        const body = head.nextElementSibling;
+        const ch = head.querySelector('.chevron');
+        body.classList.toggle('hidden');
+        ch.classList.toggle('open');
+      }
+
+      function setStatus(loggedIn, name) {
+        const dot = document.getElementById('dot');
+        const txt = document.getElementById('statusText');
+        if (loggedIn) {
+          dot.className = 'dot on';
+          txt.textContent = name || 'authenticated';
+        } else {
+          dot.className = 'dot';
+          txt.textContent = 'not logged in';
+        }
+      }
+
+      function log(label, data, isErr = false) {
+        const logEl = document.getElementById('log');
+        // Remove empty state
+        const empty = logEl.querySelector('.empty');
+        if (empty) empty.remove();
+
+        const text = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        const time = new Date().toLocaleTimeString('tr-TR');
+
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+
+        const head = document.createElement('div');
+        head.className = 'entry-head';
+
+        const labelSpan = document.createElement('span');
+        labelSpan.className = isErr ? 'err' : 'ok';
+        labelSpan.textContent = label;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'entry-time';
+        timeSpan.textContent = time;
+
+        head.appendChild(labelSpan);
+        head.appendChild(timeSpan);
+
+        const body = document.createElement('div');
+        body.className = 'entry-body';
+        body.textContent = text;
+
+        entry.appendChild(head);
+        entry.appendChild(body);
+        logEl.prepend(entry);
+      }
+
+      function clearLog() {
+        document.getElementById('log').innerHTML =
+          '<div class="empty"><div class="empty-icon">⚡</div>Endpoint\'e tıkla, sonuçlar burada görünür</div>';
+      }
+
+      // ── Token helpers ─────────────────────────────────────
+      function saveTokens(headers) {
+        const auth = headers.get('Authorization');
+        const refresh = headers.get('X-Refresh-Token');
+        if (auth) at = auth.replace('Bearer ', '');
+        if (refresh) rt = refresh;
+        if (at) {
+          try {
+            const p = JSON.parse(atob(at.split('.')[1]));
+            setStatus(true, p.username);
+          } catch {
+            setStatus(true);
+          }
+        }
+      }
+
+      function clearTokens() {
+        at = '';
+        rt = '';
+        setStatus(false);
+      }
+
+      // ── API ───────────────────────────────────────────────
+      async function api(method, path, body = null) {
+        const opts = { method, headers: {} };
+        if (at) opts.headers['Authorization'] = 'Bearer ' + at;
+        if (rt && (path.includes('refresh') || path.includes('logout'))) {
+          opts.headers['X-Refresh-Token'] = rt;
+        }
+        if (body) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        }
+        try {
+          const res = await fetch(path, opts);
+          const data = await res.json();
+          saveTokens(res.headers);
+          return { ok: res.ok, status: res.status, data };
+        } catch (e) {
+          return { ok: false, status: 0, data: { error: e.message } };
+        }
+      }
+
+      // ── Local Auth ────────────────────────────────────────
+      async function doRegister() {
+        const r = await api('POST', '/api/auth/register', {
+          username: document.getElementById('username').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+        });
+        log(r.ok ? '✅ Kayıt başarılı' : '❌ Kayıt başarısız', r.data, !r.ok);
+      }
+
+      async function doLogin() {
+        const r = await api('POST', '/api/auth/login', {
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+        });
+        log(r.ok ? '✅ Giriş başarılı' : '❌ Giriş başarısız', r.data, !r.ok);
+      }
+
+      // ── Session ───────────────────────────────────────────
+      async function getMe() {
+        const r = await api('GET', '/api/auth/me');
+        log(r.ok ? '✅ GET /me' : '❌ GET /me', r.data, !r.ok);
+      }
+
+      async function getSessions() {
+        const r = await api('GET', '/api/auth/sessions');
+        log(r.ok ? '✅ Sessions' : '❌ Sessions', r.data, !r.ok);
+      }
+
+      async function doRefresh() {
+        const r = await api('POST', '/api/auth/refresh');
+        log(r.ok ? '✅ Token yenilendi' : '❌ Refresh başarısız', r.data, !r.ok);
+      }
+
+      async function doLogout() {
+        const r = await api('POST', '/api/auth/logout');
+        clearTokens();
+        log('✅ Çıkış yapıldı', r.data);
+      }
+
+      async function doLogoutAll() {
+        const r = await api('POST', '/api/auth/logout-all');
+        clearTokens();
+        log('✅ Tüm oturumlar kapatıldı', r.data);
+      }
+
+      // ── Mobile SDK ────────────────────────────────────────
+      async function googleTokenLogin() {
+        const idToken = document.getElementById('googleIdToken').value.trim();
+        if (!idToken) return log('❌ Google id_token gir', '', true);
+        const r = await api('POST', '/api/auth/google/token', { idToken });
+        log(r.ok ? '✅ Google token login' : '❌ Google token başarısız', r.data, !r.ok);
+      }
+
+      async function facebookTokenLogin() {
+        const accessToken = document.getElementById('fbToken').value.trim();
+        if (!accessToken) return log('❌ Facebook access_token gir', '', true);
+        const r = await api('POST', '/api/auth/facebook/token', { accessToken });
+        log(r.ok ? '✅ Facebook token login' : '❌ Facebook token başarısız', r.data, !r.ok);
+      }
+
+      // ── OAuth Provider ────────────────────────────────────
+      async function registerClient() {
+        if (!at) return log('❌ Önce giriş yap', '', true);
+        const r = await api('POST', '/api/oauth/clients', {
+          name: 'Test App',
+          redirectUris: [window.location.origin + '/provider/callback'],
+          scopes: ['openid', 'profile', 'email'],
+        });
+        if (r.ok) {
+          providerClientId = r.data.data.client_id;
+          providerClientSecret = r.data.data.client_secret;
+        }
+        log(r.ok ? '✅ Client kaydedildi' : '❌ Client kaydı başarısız', r.data, !r.ok);
+      }
+
+      async function authorizeClient() {
+        if (!providerClientId) return log('❌ Önce client kaydet (adım 1)', '', true);
+        if (!at) return log('❌ Önce giriş yap', '', true);
+        const params = new URLSearchParams({
+          response_type: 'code',
+          client_id: providerClientId,
+          redirect_uri: window.location.origin + '/provider/callback',
+          scope: 'openid profile email',
+          state: 'test_' + Date.now(),
+          mode: 'json',
+        });
+        const r = await api('GET', '/api/oauth/authorize?' + params);
+        if (r.data?.data?.code) {
+          document.getElementById('authCode').value = r.data.data.code;
+        }
+        log(r.ok ? '✅ Code alındı' : '❌ Authorize başarısız', r.data, !r.ok);
+      }
+
+      async function exchangeCode() {
+        const code = document.getElementById('authCode').value.trim();
+        if (!code) return log('❌ Önce code al (adım 2)', '', true);
+        try {
+          const res = await fetch('/api/oauth/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: window.location.origin + '/provider/callback',
+              client_id: providerClientId,
+              client_secret: providerClientSecret,
+            }),
+          });
+          const data = await res.json();
+          if (data.access_token) providerAt = data.access_token;
+          log(res.ok ? '✅ Provider token alındı' : '❌ Code exchange başarısız', data, !res.ok);
+        } catch (e) {
+          log('❌ Hata', e.message, true);
+        }
+      }
+
+      async function getUserinfo() {
+        if (!providerAt) return log('❌ Önce token al (adım 3)', '', true);
+        try {
+          const res = await fetch('/api/oauth/userinfo', {
+            headers: { Authorization: 'Bearer ' + providerAt },
+          });
+          const data = await res.json();
+          log(res.ok ? '✅ UserInfo' : '❌ UserInfo başarısız', data, !res.ok);
+        } catch (e) {
+          log('❌ Hata', e.message, true);
+        }
+      }
+
+      async function revokeToken() {
+        if (!providerAt) return log('❌ İptal edilecek token yok', '', true);
+        try {
+          const res = await fetch('/api/oauth/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: providerAt }),
+          });
+          const data = await res.json();
+          providerAt = '';
+          log('✅ Token iptal edildi', data);
+        } catch (e) {
+          log('❌ Hata', e.message, true);
+        }
+      }
+
+      // ── Ticket exchange (OAuth callback'ten sonra) ────────
+      const ticket = new URLSearchParams(window.location.search).get('ticket');
+      if (ticket) {
+        api('POST', '/api/auth/exchange', { ticket }).then(r => {
+          log(r.ok ? '✅ OAuth girişi başarılı' : '❌ Ticket exchange başarısız', r.data, !r.ok);
+          window.history.replaceState({}, '', '/');
+        });
+      }
+    </script>
+  </body>
+</html>

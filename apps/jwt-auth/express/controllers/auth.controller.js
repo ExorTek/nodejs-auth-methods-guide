@@ -215,7 +215,7 @@ const refresh = async (req, res) => {
   const revokedToken = await RefreshToken.findOneAndUpdate(
     { tokenHash, isRevoked: false },
     { isRevoked: true, replacedByHash: newTokenHash },
-    { new: false },
+    { returnDocument: 'before' },
   );
 
   // Another request already rotated this token — not reuse, just race condition
