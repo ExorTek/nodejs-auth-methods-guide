@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant B as 🌐 Browser
+    participant S as 🖥️ Backend
+    participant DB as 🗄️ MongoDB
+
+    Note over B,S: OAuth callback sonrası...
+    
+    rect rgb(80, 40, 40)
+        Note over B,S: ❌ Güvensiz Yöntemler
+        Note over S: Token URL query'de → browser history, log, Referer
+        Note over S: Token fragment (#) → browser history
+        Note over S: JSON response → SPA yakalayamaz (tam sayfa redirect)
+    end
+
+    rect rgb(40, 80, 40)
+        Note over B,DB: ✅ AuthTicket Pattern
+        S->>DB: Ticket oluştur (SHA-256 hash, 30sn TTL)
+        S-->>B: 302 → frontend?ticket=opaque_string
+        Note over B: URL'den ticket oku
+        B->>S: POST /api/auth/exchange {ticket}
+        S->>DB: findOneAndUpdate<br/>(ticketHash, isUsed:false → true)
+        Note over S,DB: Atomic consume — race condition yok
+        DB-->>S: ticket.userId
+        S-->>B: JWT tokens (Authorization + X-Refresh-Token headers)
+    end

@@ -1,0 +1,12 @@
+flowchart LR
+    subgraph WEB["🌐 Web Redirect Flow"]
+        direction TB
+        W1[Kullanıcı: Google ile Giriş] --> W2[302 → Google Consent]
+        W2 --> W3[Google → callback?code=xxx]
+        W3 --> W4[Server: code → token S2S]
+        W4 --> W5[AuthTicket oluştur]
+        W5 --> W6[302 → frontend?ticket=abc]
+        W6 --> W7[POST /exchange → JWT headers]
+    end
+
+    style WEB fill:#0e1420,stroke:#4285f4,color:#fff

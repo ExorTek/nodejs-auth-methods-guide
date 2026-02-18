@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    participant C as 📱 Client<br/>(Mobile/SPA)
+    participant S as 🖥️ OAuth Server<br/>(Bizim Server)
+    
+    Note over C: code_verifier üret<br/>(random 32 byte)
+    Note over C: code_challenge = SHA256(code_verifier)<br/>.toString('base64url')
+    
+    C->>S: GET /oauth/authorize<br/>?response_type=code<br/>&client_id=xxx<br/>&code_challenge=abc<br/>&code_challenge_method=S256
+    Note over S: code_challenge'ı<br/>authorization code ile sakla
+    S-->>C: 302 → redirect_uri?code=yyy
+    
+    C->>S: POST /oauth/token<br/>{code, client_id, code_verifier}
+    
+    rect rgb(80, 40, 40)
+        Note over S: PKCE Doğrulama
+        Note over S: computed = SHA256(code_verifier)
+        Note over S: computed === stored code_challenge?
+    end
+    
+    alt ✅ Eşleşti
+        S-->>C: {access_token, refresh_token}
+    else ❌ Eşleşmedi
+        S-->>C: 400 PKCE verification failed
+    end

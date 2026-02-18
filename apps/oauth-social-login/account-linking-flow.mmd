@@ -1,0 +1,19 @@
+flowchart TD
+    A[OAuth Callback<br/>provider: google<br/>email: user@mail.com] --> B{googleId ile<br/>kullanıcı var mı?}
+    
+    B -->|Evet| C[✅ Mevcut kullanıcıyı döndür<br/>isNewUser: false]
+    
+    B -->|Hayır| D{Aynı email ile<br/>kullanıcı var mı?}
+    
+    D -->|Evet| E[🔗 Account Linking<br/>googleId ekle<br/>providers listesine 'google' ekle]
+    E --> F[✅ Güncellenmiş kullanıcıyı döndür<br/>isNewUser: false]
+    
+    D -->|Hayır| G[🆕 Yeni kullanıcı oluştur<br/>username: email prefix + provider suffix<br/>providers: 'google']
+    G --> H[✅ Yeni kullanıcıyı döndür<br/>isNewUser: true]
+
+    style A fill:#1a1a2e,stroke:#e94560,color:#fff
+    style C fill:#0a3d2e,stroke:#22d3a0,color:#fff
+    style F fill:#0a3d2e,stroke:#22d3a0,color:#fff
+    style H fill:#0a3d2e,stroke:#22d3a0,color:#fff
+    style E fill:#1a1a3e,stroke:#9b72ff,color:#fff
+    style G fill:#1a1a3e,stroke:#4285f4,color:#fff

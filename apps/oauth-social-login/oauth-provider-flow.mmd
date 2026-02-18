@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    participant A as 👤 Uygulama Sahibi<br/>(Developer)
+    participant C as 🖥️ 3. Parti App<br/>(Client)
+    participant U as 👤 Kullanıcı
+    participant S as 🔐 Bizim Server<br/>(OAuth Provider)
+
+    rect rgb(30, 30, 60)
+        Note over A,S: 1️⃣ Client Registration (bir kez)
+        A->>S: POST /oauth/clients<br/>{name, redirectUris}
+        S-->>A: {client_id, client_secret}<br/>⚠️ secret sadece bir kez gösterilir
+    end
+
+    rect rgb(30, 50, 30)
+        Note over C,S: 2️⃣ Authorization Flow
+        C->>S: GET /oauth/authorize<br/>?response_type=code<br/>&client_id=xxx<br/>&redirect_uri=yyy<br/>&code_challenge=zzz
+        Note over S: Kullanıcı oturumu kontrol et
+        S-->>U: Consent Screen<br/>"Bu uygulama email ve profilinize<br/>erişmek istiyor. İzin veriyor musunuz?"
+        U->>S: İzin ver ✅
+        S-->>C: 302 → redirect_uri?code=abc&state=def
+    end
+
+    rect rgb(50, 30, 30)
+        Note over C,S: 3️⃣ Token Exchange
+        C->>S: POST /oauth/token<br/>{code, client_id, client_secret, code_verifier}
+        Note over S: Code consume (atomic)<br/>PKCE doğrula<br/>redirect_uri eşleştir
+        S-->>C: {access_token, refresh_token, expires_in}
+    end
+
+    rect rgb(40, 40, 60)
+        Note over C,S: 4️⃣ Resource Access
+        C->>S: GET /oauth/userinfo<br/>Authorization: Bearer access_token
+        S-->>C: {sub, name, email, picture}
+    end

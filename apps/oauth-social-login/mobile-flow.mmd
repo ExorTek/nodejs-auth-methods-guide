@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph MOBILE["📱 Mobile SDK Flow"]
+        direction TB
+        M1[SDK: Google/Facebook Sign-In] --> M2[SDK → id_token / access_token]
+        M2 --> M3[POST /api/auth/google/token]
+        M3 --> M4[Server: token'ı provider ile doğrula]
+        M4 --> M5[aud / app_id kontrolü]
+        M5 --> M6[JWT tokens direkt JSON response]
+    end
+
+    style MOBILE fill:#0e1420,stroke:#22d3a0,color:#fff

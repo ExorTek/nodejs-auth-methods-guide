@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    participant U as 👤 Kullanıcı
+    participant B as 🌐 Browser
+    participant S as 🖥️ Uygulama<br/>(Express/Fastify)
+    participant G as 🔐 Google<br/>(Auth Server)
+    participant API as 📡 Google API<br/>(Resource Server)
+
+    U->>B: "Google ile Giriş Yap" tıkla
+    B->>S: GET /api/auth/google
+    Note over S: state üret ve sakla<br/>(CSRF koruması)
+    S-->>B: 302 Redirect → accounts.google.com
+    B->>G: Authorization URL + state + scope
+    G-->>U: Login ekranı + consent screen
+    U->>G: İzin ver ✅
+    G-->>B: 302 Redirect → /callback?code=xxx&state=yyy
+    B->>S: GET /api/auth/google/callback?code=xxx&state=yyy
+    Note over S: state doğrula (CSRF check)
+    
+    rect rgb(40, 40, 80)
+        Note over S,G: Server-to-Server (client_secret güvende)
+        S->>G: POST /token {code, client_id, client_secret}
+        G-->>S: {access_token, id_token}
+    end
+    
+    S->>API: GET /userinfo (Bearer access_token)
+    API-->>S: {email, name, picture}
+    Note over S: User bul/oluştur<br/>(Account Linking)
+    Note over S: AuthTicket oluştur<br/>(30sn, tek kullanım)
+    S-->>B: 302 Redirect → frontend?ticket=abc
+    B->>S: POST /api/auth/exchange {ticket}
+    Note over S: Ticket consume (atomic)
+    S-->>B: JWT tokens (headers)
