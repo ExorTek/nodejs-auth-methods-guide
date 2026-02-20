@@ -4,17 +4,17 @@ A comprehensive **8-article series** covering every major authentication method 
 
 ## 📚 Article Series
 
-| #   | Topic                             | Framework         | Article                                                                                                                | Code                       | Status |
-| --- | --------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------ |
-| 0   | Introduction to Authentication    | —                 | [Read](https://medium.com/@mem3t/kimlik-doğrulama-nedir-authentication-authorization-ve-session-yönetimi-a0aa964a5fe3) | —                          | ✅     |
-| 1   | Session-Based Authentication      | Express + Fastify | [Read](https://medium.com/@mem3t/session-based-authentication-klasik-ama-güçlü-0e0e9b07815f)                           | [Code](apps/session-auth/) | ✅     |
-| 2   | JWT & Refresh Token               | Express + Fastify | [Read](https://medium.com/@mem3t/jwt-refresh-token-stateless-authenticationın-modern-yüzü-faae7d2b0450)                | [Code](apps/jwt-auth/)     | ✅     |
-| 3   | OAuth 2.0 & Social Login          | Express + Fastify | —                                                                                                                      | —                          | 🔜     |
-| 4   | Enterprise SSO (OIDC & SAML)      | Express + Fastify | —                                                                                                                      | —                          | ⬜     |
-| 5   | Multi-Factor Authentication       | Express + Fastify | —                                                                                                                      | —                          | ⬜     |
-| 6   | Passwordless (WebAuthn, Passkeys) | Express + Fastify | —                                                                                                                      | —                          | ⬜     |
-| 7   | Blockchain & Web3 Auth            | Express + Fastify | —                                                                                                                      | —                          | ⬜     |
-| 8   | API & Service-to-Service          | Express + Fastify | —                                                                                                                      | —                          | ⬜     |
+| #   | Topic                             | Framework         | Article                                                                                                                | Code                             | Status |
+| --- | --------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------ |
+| 0   | Introduction to Authentication    | —                 | [Read](https://medium.com/@mem3t/kimlik-doğrulama-nedir-authentication-authorization-ve-session-yönetimi-a0aa964a5fe3) | —                                | ✅     |
+| 1   | Session-Based Authentication      | Express + Fastify | [Read](https://medium.com/@mem3t/session-based-authentication-klasik-ama-güçlü-0e0e9b07815f)                           | [Code](apps/session-auth/)       | ✅     |
+| 2   | JWT & Refresh Token               | Express + Fastify | [Read](https://medium.com/@mem3t/jwt-refresh-token-stateless-authenticationın-modern-yüzü-faae7d2b0450)                | [Code](apps/jwt-auth/)           | ✅     |
+| 3   | OAuth 2.0 & Social Login          | Express + Fastify | [Read](https://medium.com/@mem3t/oauth-2-0-social-login-google-ile-giriş-yap-butonunun-arkasındaki-dünya-91000af00844) | [Code](apps/oauth-social-login/) | ✅     |
+| 4   | Enterprise SSO (OIDC & SAML)      | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 5   | Multi-Factor Authentication       | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 6   | Passwordless (WebAuthn, Passkeys) | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 7   | Blockchain & Web3 Auth            | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 8   | API & Service-to-Service          | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
 
 ## 🏗️ Repository Structure
 
