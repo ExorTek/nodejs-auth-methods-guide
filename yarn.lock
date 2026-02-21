@@ -29,6 +29,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@auth-guide/oauth-social-login-fastify@workspace:apps/oauth-social-login/fastify":
+  version: 0.0.0-use.local
+  resolution: "@auth-guide/oauth-social-login-fastify@workspace:apps/oauth-social-login/fastify"
+  dependencies:
+    "@auth-guide/shared": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@auth-guide/session-auth-express@workspace:apps/session-auth/express":
   version: 0.0.0-use.local
   resolution: "@auth-guide/session-auth-express@workspace:apps/session-auth/express"

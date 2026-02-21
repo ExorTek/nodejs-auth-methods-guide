@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Auth Verify</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'JetBrains Mono', monospace;
+        background: #080c14;
+        color: #e2e8f4;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+      }
+
+      .box {
+        width: 100%;
+        max-width: 520px;
+        background: #0e1420;
+        border: 1px solid #1a2235;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .box-head {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #1a2235;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .box-head h1 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .status {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .status.loading {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+      }
+      .status.ok {
+        background: rgba(34, 211, 160, 0.15);
+        color: #22d3a0;
+      }
+      .status.err {
+        background: rgba(255, 82, 82, 0.15);
+        color: #ff5252;
+      }
+
+      .box-body {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      label {
+        font-size: 0.62rem;
+        color: #4a5568;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .value {
+        background: #080c14;
+        border: 1px solid #1a2235;
+        border-radius: 7px;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.68rem;
+        color: #8896b0;
+        word-break: break-all;
+        line-height: 1.6;
+        min-height: 42px;
+        white-space: pre-wrap;
+        position: relative;
+      }
+
+      .value.ok {
+        border-color: rgba(34, 211, 160, 0.25);
+        color: #22d3a0;
+      }
+      .value.err {
+        border-color: rgba(255, 82, 82, 0.25);
+        color: #ff5252;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.4rem;
+        background: rgba(255, 255, 255, 0.06);
+        border: none;
+        border-radius: 4px;
+        color: #4a5568;
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        cursor: pointer;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .copy-btn:hover {
+        color: #e2e8f4;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .sep {
+        border-top: 1px solid #1a2235;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 0.6rem;
+        border: none;
+        border-radius: 7px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: filter 0.15s;
+      }
+
+      .btn-purple {
+        background: #9b72ff;
+        color: #fff;
+      }
+      .btn-purple:hover {
+        filter: brightness(0.9);
+      }
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        color: #8896b0;
+        border: 1px solid #1a2235;
+      }
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .row {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .row .btn {
+        flex: 1;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border: 2px solid rgba(251, 191, 36, 0.3);
+        border-top-color: #fbbf24;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="box-head">
+        <h1>🔑 Auth Verify</h1>
+        <span
+          class="status loading"
+          id="status">
+          <span class="spinner"></span> exchanging...
+        </span>
+      </div>
+      <div
+        class="box-body"
+        id="body">
+        <div class="field">
+          <label>Ticket</label>
+          <div
+            class="value"
+            id="ticketVal">
+            —
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const ticket = params.get('ticket');
+      const isNew = params.get('new') === '1';
+
+      let accessToken = '';
+      let refreshToken = '';
+
+      document.getElementById('ticketVal').textContent = ticket || '(ticket yok)';
+
+      // ── Helpers ──────────────────────────────────────────
+      function esc(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function createField(label, value, isOk, copyable) {
+        const field = document.createElement('div');
+        field.className = 'field';
+
+        const lbl = document.createElement('label');
+        lbl.textContent = label;
+        field.appendChild(lbl);
+
+        const val = document.createElement('div');
+        val.className = 'value' + (isOk ? ' ok' : '');
+        val.style.position = 'relative';
+        val.textContent = value;
+
+        if (copyable) {
+          const btn = document.createElement('button');
+          btn.className = 'copy-btn';
+          btn.textContent = 'kopyala';
+          btn.addEventListener('click', () => {
+            navigator.clipboard
+              .writeText(value)
+              .then(() => {
+                btn.textContent = 'kopyalandı!';
+                setTimeout(() => {
+                  btn.textContent = 'kopyala';
+                }, 1500);
+              })
+              .catch(() => {});
+          });
+          val.appendChild(btn);
+        }
+
+        field.appendChild(val);
+        return field;
+      }
+
+      // ── Exchange ─────────────────────────────────────────
+      async function exchange() {
+        const status = document.getElementById('status');
+        const body = document.getElementById('body');
+
+        if (!ticket) {
+          status.className = 'status err';
+          status.textContent = '❌ ticket yok';
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/auth/exchange', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket }),
+          });
+
+          const data = await res.json();
+          accessToken = res.headers.get('Authorization')?.replace('Bearer ', '') || '';
+          refreshToken = res.headers.get('X-Refresh-Token') || '';
+
+          // Decode JWT payload
+          let payload = {};
+          try {
+            payload = JSON.parse(atob(accessToken.split('.')[1]));
+          } catch {}
+
+          if (res.ok && accessToken) {
+            status.className = 'status ok';
+            status.textContent = isNew ? '✅ Kayıt başarılı' : '✅ Giriş başarılı';
+
+            // Clear body and rebuild with safe DOM methods
+            body.innerHTML = '';
+
+            body.appendChild(createField('Ticket', ticket, true, true));
+            body.appendChild(createField('Access Token', accessToken, true, true));
+            body.appendChild(createField('Refresh Token', refreshToken, true, true));
+
+            const payloadStr = JSON.stringify(
+              {
+                userId: payload.userId,
+                username: payload.username,
+                iat: payload.iat ? new Date(payload.iat * 1000).toISOString() : null,
+                exp: payload.exp ? new Date(payload.exp * 1000).toISOString() : null,
+              },
+              null,
+              2,
+            );
+            body.appendChild(createField('Token Payload', payloadStr, false, false));
+
+            const userStr = JSON.stringify(data.data?.user, null, 2);
+            body.appendChild(createField('User', userStr, false, false));
+
+            // Separator
+            const sep = document.createElement('div');
+            sep.className = 'sep';
+            body.appendChild(sep);
+
+            // Buttons
+            const row = document.createElement('div');
+            row.className = 'row';
+
+            const meBtn = document.createElement('button');
+            meBtn.className = 'btn btn-purple';
+            meBtn.textContent = 'GET /me';
+            meBtn.addEventListener('click', getMe);
+            row.appendChild(meBtn);
+
+            const dashBtn = document.createElement('button');
+            dashBtn.className = 'btn btn-ghost';
+            dashBtn.textContent = '← Dashboard';
+            dashBtn.addEventListener('click', () => {
+              window.location = '/';
+            });
+            row.appendChild(dashBtn);
+
+            body.appendChild(row);
+
+            // Result placeholder
+            const meResult = document.createElement('div');
+            meResult.className = 'value';
+            meResult.id = 'meResult';
+            meResult.style.display = 'none';
+            body.appendChild(meResult);
+          } else {
+            status.className = 'status err';
+            status.textContent = '❌ Exchange başarısız';
+            const errDiv = document.createElement('div');
+            errDiv.className = 'value err';
+            errDiv.textContent = JSON.stringify(data, null, 2);
+            body.appendChild(errDiv);
+          }
+        } catch (e) {
+          status.className = 'status err';
+          status.textContent = '❌ Hata';
+          const errDiv = document.createElement('div');
+          errDiv.className = 'value err';
+          errDiv.textContent = e.message;
+          body.appendChild(errDiv);
+        }
+
+        // Clean URL
+        window.history.replaceState({}, '', '/verify');
+      }
+
+      async function getMe() {
+        const result = document.getElementById('meResult');
+        result.style.display = 'block';
+        result.textContent = 'loading...';
+        result.className = 'value';
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: { Authorization: 'Bearer ' + accessToken },
+          });
+          const data = await res.json();
+          result.className = 'value ' + (res.ok ? 'ok' : 'err');
+          result.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          result.className = 'value err';
+          result.textContent = e.message;
+        }
+      }
+
+      exchange();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "@auth-guide/oauth-social-login-fastify",
+  "version": "1.0.0",
+  "description": "OAuth 2.0 & Social Login with Google/Facebook using Fastify — manual implementation + custom OAuth provider with PKCE",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test *.test.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*"
+  }
+}

@@ -1,0 +1,1288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Provider Test</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #080c14;
+        --bg-card: #0e1420;
+        --bg-input: #060a10;
+        --border: #1a2235;
+        --border-hover: #2a3550;
+        --text: #e2e8f4;
+        --text-dim: #8896b0;
+        --text-muted: #4a5568;
+        --green: #22d3a0;
+        --purple: #9b72ff;
+        --amber: #fbbf24;
+        --red: #ff5252;
+        --cyan: #22d3ee;
+        --blue: #60a5fa;
+        --mono: 'JetBrains Mono', monospace;
+        --sans: 'Syne', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 52px 1fr;
+      }
+
+      /* ── Header ─────────────────────────── */
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: rgba(8, 12, 20, 0.95);
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, var(--purple), var(--cyan));
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+      }
+
+      header h1 {
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      header h1 span {
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .back-btn {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        transition: all 0.15s;
+      }
+
+      .back-btn:hover {
+        color: var(--text);
+        border-color: var(--border-hover);
+      }
+
+      /* ── Layout ─────────────────────────── */
+      main {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        overflow: hidden;
+      }
+
+      .panel {
+        overflow-y: auto;
+        padding: 1.25rem;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .panel:last-child {
+        border-right: none;
+      }
+
+      /* ── Panel Headers ───────────────────── */
+      .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.25rem;
+      }
+
+      .panel-title h2 {
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .role-badge {
+        font-family: var(--mono);
+        font-size: 0.58rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.12rem 0.4rem;
+        border-radius: 4px;
+      }
+
+      .badge-a {
+        background: rgba(34, 211, 160, 0.15);
+        color: var(--green);
+      }
+      .badge-b {
+        background: rgba(96, 165, 250, 0.15);
+        color: var(--blue);
+      }
+      .badge-flow {
+        background: rgba(155, 114, 255, 0.15);
+        color: var(--purple);
+      }
+
+      /* ── Cards ──────────────────────────── */
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .card.active {
+        border-color: var(--purple);
+      }
+      .card.done {
+        border-color: rgba(34, 211, 160, 0.4);
+      }
+
+      .card-head {
+        padding: 0.65rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-head h3 {
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .step-num {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+      }
+
+      .step-num.done-num {
+        background: rgba(34, 211, 160, 0.15);
+        border-color: rgba(34, 211, 160, 0.4);
+        color: var(--green);
+      }
+
+      .card-status {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+      }
+
+      .status-pending {
+        background: rgba(251, 191, 36, 0.1);
+        color: var(--amber);
+      }
+      .status-done {
+        background: rgba(34, 211, 160, 0.1);
+        color: var(--green);
+      }
+      .status-error {
+        background: rgba(255, 82, 82, 0.1);
+        color: var(--red);
+      }
+
+      .card-body {
+        padding: 0.8rem 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      /* ── Inputs ──────────────────────────── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      label {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.5rem 0.65rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        transition: border-color 0.15s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--purple);
+      }
+      input::placeholder {
+        color: var(--text-muted);
+      }
+      input[readonly] {
+        color: var(--text-dim);
+        cursor: default;
+      }
+
+      /* ── Buttons ─────────────────────────── */
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.55rem 0.8rem;
+        border: none;
+        border-radius: 7px;
+        font-family: var(--sans);
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+        width: 100%;
+        color: #fff;
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn:not(:disabled):active {
+        transform: scale(0.97);
+      }
+
+      .btn-green {
+        background: var(--green);
+        color: #000;
+      }
+      .btn-green:not(:disabled):hover {
+        filter: brightness(0.9);
+      }
+      .btn-blue {
+        background: var(--blue);
+        color: #000;
+      }
+      .btn-blue:not(:disabled):hover {
+        filter: brightness(0.9);
+      }
+      .btn-purple {
+        background: var(--purple);
+      }
+      .btn-purple:not(:disabled):hover {
+        filter: brightness(0.9);
+      }
+      .btn-amber {
+        background: var(--amber);
+        color: #000;
+      }
+      .btn-amber:not(:disabled):hover {
+        filter: brightness(0.9);
+      }
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:not(:disabled):hover {
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .row {
+        display: flex;
+        gap: 0.4rem;
+      }
+      .row .btn {
+        flex: 1;
+      }
+
+      .method {
+        font-family: var(--mono);
+        font-size: 0.58rem;
+        font-weight: 600;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* ── Result box ──────────────────────── */
+      .result {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.6rem 0.7rem;
+        font-family: var(--mono);
+        font-size: 0.67rem;
+        color: var(--text-dim);
+        line-height: 1.7;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 160px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .result.ok {
+        border-color: rgba(34, 211, 160, 0.3);
+        color: var(--green);
+      }
+      .result.err {
+        border-color: rgba(255, 82, 82, 0.3);
+        color: var(--red);
+      }
+
+      /* ── Arrow connector ─────────────────── */
+      .arrow {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        padding: 0.1rem 0;
+      }
+
+      /* ── Info box ────────────────────────── */
+      .info {
+        background: rgba(155, 114, 255, 0.06);
+        border: 1px solid rgba(155, 114, 255, 0.2);
+        border-radius: 7px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+
+      .info strong {
+        color: var(--purple);
+      }
+
+      /* ── Token display ───────────────────── */
+      .token-row {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .token-row input {
+        flex: 1;
+      }
+
+      .copy-btn {
+        padding: 0.5rem 0.6rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+
+      .copy-btn:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      /* ── Scrollbar ───────────────────────── */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <div class="logo">🏗️</div>
+        <h1>OAuth Provider Test <span>— Client vs Resource Owner</span></h1>
+      </div>
+      <a
+        href="/apps/oauth-social-login/express/public"
+        class="back-btn"
+        >← Dashboard</a
+      >
+    </header>
+
+    <main>
+      <!-- ══════════════════════════════════════
+       PANEL A — Client (Kullanıcı A)
+  ══════════════════════════════════════ -->
+      <div class="panel">
+        <div class="panel-title">
+          <h2>👤 Kullanıcı A</h2>
+          <span class="role-badge badge-a">CLIENT OWNER</span>
+        </div>
+
+        <div class="info">
+          <strong>Rol:</strong> OAuth client'ı oluşturan geliştirici. Client ID + Secret alır, bunları kendi
+          uygulamasında kullanır.
+        </div>
+
+        <!-- Step 1: Register/Login -->
+        <div
+          class="card"
+          id="cardA1">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numA1"
+                >1</span
+              >
+              Giriş Yap
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusA1"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>username</label>
+              <input
+                type="text"
+                id="a-username"
+                value="client_owner" />
+            </div>
+            <div class="field">
+              <label>email</label>
+              <input
+                type="email"
+                id="a-email"
+                value="owner@example.com" />
+            </div>
+            <div class="field">
+              <label>password</label>
+              <input
+                type="password"
+                id="a-password"
+                value="Test@1234" />
+            </div>
+            <div class="row">
+              <button
+                class="btn btn-green"
+                onclick="aRegister()">
+                <span class="method">POST</span> Register
+              </button>
+              <button
+                class="btn btn-green"
+                onclick="aLogin()">
+                <span class="method">POST</span> Login
+              </button>
+            </div>
+            <div
+              class="result"
+              id="resultA1"></div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Step 2: Register Client -->
+        <div
+          class="card"
+          id="cardA2">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numA2"
+                >2</span
+              >
+              Client Kaydet
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusA2"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <button
+              class="btn btn-green"
+              id="btnRegisterClient"
+              onclick="registerClient()"
+              disabled>
+              <span class="method">POST</span> /api/oauth/clients
+            </button>
+            <div
+              class="result"
+              id="resultA2"></div>
+            <div
+              class="field"
+              id="clientIdField"
+              style="display: none">
+              <label>client_id</label>
+              <div class="token-row">
+                <input
+                  type="text"
+                  id="a-client-id"
+                  readonly />
+                <button
+                  class="copy-btn"
+                  onclick="copy('a-client-id')">
+                  kopyala
+                </button>
+              </div>
+            </div>
+            <div
+              class="field"
+              id="clientSecretField"
+              style="display: none">
+              <label>client_secret ⚠️ bir kez gösterilir</label>
+              <div class="token-row">
+                <input
+                  type="text"
+                  id="a-client-secret"
+                  readonly />
+                <button
+                  class="copy-btn"
+                  onclick="copy('a-client-secret')">
+                  kopyala
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Step 5: Exchange Code -->
+        <div
+          class="card"
+          id="cardA3">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numA3"
+                >5</span
+              >
+              Code → Token
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusA3"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>authorization code (B'den gelir)</label>
+              <input
+                type="text"
+                id="a-auth-code"
+                placeholder="Kullanıcı B adım 4'ten otomatik dolar" />
+            </div>
+            <button
+              class="btn btn-green"
+              id="btnExchange"
+              onclick="exchangeCode()"
+              disabled>
+              <span class="method">POST</span> /api/oauth/token
+            </button>
+            <div
+              class="result"
+              id="resultA3"></div>
+            <div
+              class="field"
+              id="providerTokenField"
+              style="display: none">
+              <label>provider access_token</label>
+              <div class="token-row">
+                <input
+                  type="text"
+                  id="a-provider-token"
+                  readonly />
+                <button
+                  class="copy-btn"
+                  onclick="copy('a-provider-token')">
+                  kopyala
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Step 6: UserInfo -->
+        <div
+          class="card"
+          id="cardA4">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numA4"
+                >6</span
+              >
+              UserInfo Al
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusA4"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <button
+              class="btn btn-purple"
+              id="btnUserinfo"
+              onclick="getUserinfo()"
+              disabled>
+              <span class="method">GET</span> /api/oauth/userinfo
+            </button>
+            <div
+              class="result"
+              id="resultA4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════
+       PANEL B — Resource Owner (Kullanıcı B)
+  ══════════════════════════════════════ -->
+      <div class="panel">
+        <div class="panel-title">
+          <h2>👤 Kullanıcı B</h2>
+          <span class="role-badge badge-b">RESOURCE OWNER</span>
+        </div>
+
+        <div class="info">
+          <strong>Rol:</strong> Kaynaklara sahip olan kullanıcı. Client'a kendi verilerine erişim izni verir.
+        </div>
+
+        <!-- Step 3: Register/Login -->
+        <div
+          class="card"
+          id="cardB1">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numB1"
+                >3</span
+              >
+              Giriş Yap
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusB1"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>username</label>
+              <input
+                type="text"
+                id="b-username"
+                value="resource_owner" />
+            </div>
+            <div class="field">
+              <label>email</label>
+              <input
+                type="email"
+                id="b-email"
+                value="user@example.com" />
+            </div>
+            <div class="field">
+              <label>password</label>
+              <input
+                type="password"
+                id="b-password"
+                value="Test@5678" />
+            </div>
+            <div class="row">
+              <button
+                class="btn btn-blue"
+                onclick="bRegister()">
+                <span class="method">POST</span> Register
+              </button>
+              <button
+                class="btn btn-blue"
+                onclick="bLogin()">
+                <span class="method">POST</span> Login
+              </button>
+            </div>
+            <div
+              class="result"
+              id="resultB1"></div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Step 4: Authorize -->
+        <div
+          class="card"
+          id="cardB2">
+          <div class="card-head">
+            <h3>
+              <span
+                class="step-num"
+                id="numB2"
+                >4</span
+              >
+              Client'ı Authorize Et
+            </h3>
+            <span
+              class="card-status status-pending"
+              id="statusB2"
+              >bekliyor</span
+            >
+          </div>
+          <div class="card-body">
+            <div
+              class="info"
+              style="font-size: 0.7rem">
+              Kullanıcı B, Kullanıcı A'nın client'ına kendi verilerine erişim izni veriyor.
+            </div>
+            <button
+              class="btn btn-blue"
+              id="btnAuthorize"
+              onclick="authorize()"
+              disabled>
+              <span class="method">GET</span> /api/oauth/authorize
+            </button>
+            <div
+              class="result"
+              id="resultB2"></div>
+            <div
+              class="field"
+              id="authCodeField"
+              style="display: none">
+              <label>authorization code → A'ya gönderildi ✅</label>
+              <div class="token-row">
+                <input
+                  type="text"
+                  id="b-auth-code"
+                  readonly />
+                <button
+                  class="copy-btn"
+                  onclick="copy('b-auth-code')">
+                  kopyala
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- B's tokens info -->
+        <div class="card">
+          <div class="card-head">
+            <h3><span class="step-num">ℹ</span> B'nin Token'ları</h3>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>app access token</label>
+              <div class="token-row">
+                <input
+                  type="text"
+                  id="b-access-token"
+                  readonly
+                  placeholder="login sonrası dolar" />
+                <button
+                  class="copy-btn"
+                  onclick="copy('b-access-token')">
+                  kopyala
+                </button>
+              </div>
+            </div>
+            <button
+              class="btn btn-ghost"
+              onclick="bGetMe()">
+              <span class="method">GET</span> /me — Kim olduğumu doğrula
+            </button>
+            <div
+              class="result"
+              id="resultBMe"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════
+       PANEL C — Flow & Sonuç
+  ══════════════════════════════════════ -->
+      <div class="panel">
+        <div class="panel-title">
+          <h2>⚡ Flow</h2>
+          <span class="role-badge badge-flow">SONUÇ</span>
+        </div>
+
+        <div class="info">
+          Adımları sırayla yap: <strong>A (1→2)</strong> → <strong>B (3→4)</strong> → <strong>A (5→6)</strong>
+        </div>
+
+        <!-- Flow steps -->
+        <div class="card">
+          <div class="card-head">
+            <h3>📋 Adımlar</h3>
+          </div>
+          <div
+            class="card-body"
+            style="gap: 0.3rem">
+            <div
+              class="flow-step"
+              id="flow1">
+              ⬜ 1. A register/login
+            </div>
+            <div
+              class="flow-step"
+              id="flow2">
+              ⬜ 2. A client kaydet → client_id + secret
+            </div>
+            <div
+              class="flow-step"
+              id="flow3">
+              ⬜ 3. B register/login
+            </div>
+            <div
+              class="flow-step"
+              id="flow4">
+              ⬜ 4. B authorize → authorization code
+            </div>
+            <div
+              class="flow-step"
+              id="flow5">
+              ⬜ 5. A code exchange → provider token
+            </div>
+            <div
+              class="flow-step"
+              id="flow6">
+              ⬜ 6. A userinfo → B'nin verileri
+            </div>
+          </div>
+        </div>
+
+        <!-- Final result -->
+        <div
+          class="card"
+          id="finalCard"
+          style="display: none">
+          <div class="card-head">
+            <h3>🎯 Sonuç</h3>
+            <span class="card-status status-done">başarılı</span>
+          </div>
+          <div class="card-body">
+            <div
+              class="info"
+              style="font-size: 0.72rem; border-color: rgba(34, 211, 160, 0.3); background: rgba(34, 211, 160, 0.05)">
+              Kullanıcı A, Kullanıcı B'nin izniyle B'nin verilerini okudu. İşte OAuth'un özü bu.
+            </div>
+            <div class="field">
+              <label>B'nin verileri (A tarafından okundu)</label>
+              <div
+                class="result ok"
+                id="finalResult"
+                style="display: block; max-height: 300px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revoke -->
+        <div class="card">
+          <div class="card-head">
+            <h3>🗑️ Token İptal (RFC 7009)</h3>
+          </div>
+          <div class="card-body">
+            <button
+              class="btn btn-ghost"
+              id="btnRevoke"
+              onclick="revokeToken()"
+              disabled>
+              <span class="method">POST</span> /api/oauth/revoke
+            </button>
+            <div
+              class="result"
+              id="resultRevoke"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <style>
+      .flow-step {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        padding: 0.3rem 0.4rem;
+        border-radius: 5px;
+        transition: all 0.2s;
+      }
+      .flow-step.done {
+        color: var(--green);
+        background: rgba(34, 211, 160, 0.06);
+      }
+      .flow-step.active {
+        color: var(--amber);
+        background: rgba(251, 191, 36, 0.06);
+      }
+    </style>
+
+    <script>
+      // ── State ──────────────────────────────────────────────
+      let aAt = ''; // Kullanıcı A access token
+      let bAt = ''; // Kullanıcı B access token
+      let clientId = '';
+      let clientSecret = '';
+      let authCode = '';
+      let providerToken = '';
+
+      // ── Helpers ────────────────────────────────────────────
+      function show(id, text, isErr = false) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.className = 'result ' + (isErr ? 'err' : 'ok');
+        el.textContent = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+      }
+
+      function setStatus(id, type, text) {
+        const el = document.getElementById(id);
+        el.className = 'card-status status-' + type;
+        el.textContent = text;
+      }
+
+      function setStep(id, state) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'flow-step ' + state;
+        if (state === 'done') {
+          el.textContent = el.textContent.replace('⬜', '✅').replace('🔄', '✅');
+        } else if (state === 'active') {
+          el.textContent = el.textContent.replace('⬜', '🔄');
+        }
+      }
+
+      function markStepNum(id) {
+        const el = document.getElementById(id);
+        if (el) el.className = 'step-num done-num';
+      }
+
+      function copy(inputId) {
+        const val = document.getElementById(inputId).value;
+        navigator.clipboard.writeText(val).catch(() => {});
+      }
+
+      // ── API ────────────────────────────────────────────────
+      async function req(method, path, body = null, token = null) {
+        const opts = { method, headers: {} };
+        if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+        if (body) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(path, opts);
+        const data = await res.json();
+        const at = res.headers.get('Authorization')?.replace('Bearer ', '');
+        return { ok: res.ok, data, at };
+      }
+
+      // ══════════════════════════════════════
+      // KULLANICI A
+      // ══════════════════════════════════════
+
+      async function aRegister() {
+        setStep('flow1', 'active');
+        const r = await req('POST', '/api/auth/register', {
+          username: document.getElementById('a-username').value,
+          email: document.getElementById('a-email').value,
+          password: document.getElementById('a-password').value,
+        });
+        if (r.ok && r.at) {
+          aAt = r.at;
+          show('resultA1', r.data);
+          setStatus('statusA1', 'done', '✅ kayıtlı');
+          markStepNum('numA1');
+          setStep('flow1', 'done');
+          document.getElementById('btnRegisterClient').disabled = false;
+        } else {
+          show('resultA1', r.data, true);
+          setStatus('statusA1', 'error', '❌ hata');
+        }
+      }
+
+      async function aLogin() {
+        setStep('flow1', 'active');
+        const r = await req('POST', '/api/auth/login', {
+          email: document.getElementById('a-email').value,
+          password: document.getElementById('a-password').value,
+        });
+        if (r.ok && r.at) {
+          aAt = r.at;
+          show('resultA1', r.data);
+          setStatus('statusA1', 'done', '✅ giriş yapıldı');
+          markStepNum('numA1');
+          setStep('flow1', 'done');
+          document.getElementById('btnRegisterClient').disabled = false;
+        } else {
+          show('resultA1', r.data, true);
+          setStatus('statusA1', 'error', '❌ hata');
+        }
+      }
+
+      async function registerClient() {
+        setStep('flow2', 'active');
+        const r = await req(
+          'POST',
+          '/api/oauth/clients',
+          {
+            name: 'Test Client App',
+            redirectUris: ['http://localhost:3002/provider/callback'],
+            scopes: ['openid', 'profile', 'email'],
+          },
+          aAt,
+        );
+
+        if (r.ok) {
+          clientId = r.data.data.client_id;
+          clientSecret = r.data.data.client_secret;
+
+          document.getElementById('a-client-id').value = clientId;
+          document.getElementById('a-client-secret').value = clientSecret;
+          document.getElementById('clientIdField').style.display = 'flex';
+          document.getElementById('clientSecretField').style.display = 'flex';
+
+          show('resultA2', { client_id: clientId, client_secret: clientSecret });
+          setStatus('statusA2', 'done', '✅ oluşturuldu');
+          markStepNum('numA2');
+          setStep('flow2', 'done');
+
+          // Enable B's authorize button if B is logged in
+          if (bAt) document.getElementById('btnAuthorize').disabled = false;
+        } else {
+          show('resultA2', r.data, true);
+          setStatus('statusA2', 'error', '❌ hata');
+        }
+      }
+
+      async function exchangeCode() {
+        setStep('flow5', 'active');
+        const code = document.getElementById('a-auth-code').value.trim();
+        if (!code) {
+          show('resultA3', 'Önce Kullanıcı B authorize etmeli (adım 4)', true);
+          return;
+        }
+
+        const res = await fetch('/api/oauth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: 'http://localhost:3002/provider/callback',
+            client_id: clientId,
+            client_secret: clientSecret,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.access_token) {
+          providerToken = data.access_token;
+          document.getElementById('a-provider-token').value = providerToken;
+          document.getElementById('providerTokenField').style.display = 'flex';
+
+          show('resultA3', data);
+          setStatus('statusA3', 'done', '✅ token alındı');
+          markStepNum('numA3');
+          setStep('flow5', 'done');
+          document.getElementById('btnUserinfo').disabled = false;
+          document.getElementById('btnRevoke').disabled = false;
+        } else {
+          show('resultA3', data, true);
+          setStatus('statusA3', 'error', '❌ hata');
+          setStep('flow5', 'active');
+        }
+      }
+
+      async function getUserinfo() {
+        setStep('flow6', 'active');
+        const res = await fetch('/api/oauth/userinfo', {
+          headers: { Authorization: 'Bearer ' + providerToken },
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          show('resultA4', data);
+          setStatus('statusA4', 'done', "✅ B'nin verisi");
+          markStepNum('numA4');
+          setStep('flow6', 'done');
+
+          // Show final result
+          document.getElementById('finalCard').style.display = 'block';
+          document.getElementById('finalResult').textContent = JSON.stringify(data, null, 2);
+        } else {
+          show('resultA4', data, true);
+          setStatus('statusA4', 'error', '❌ hata');
+        }
+      }
+
+      // ══════════════════════════════════════
+      // KULLANICI B
+      // ══════════════════════════════════════
+
+      async function bRegister() {
+        setStep('flow3', 'active');
+        const r = await req('POST', '/api/auth/register', {
+          username: document.getElementById('b-username').value,
+          email: document.getElementById('b-email').value,
+          password: document.getElementById('b-password').value,
+        });
+        if (r.ok && r.at) {
+          bAt = r.at;
+          document.getElementById('b-access-token').value = bAt;
+          show('resultB1', r.data);
+          setStatus('statusB1', 'done', '✅ kayıtlı');
+          markStepNum('numB1');
+          setStep('flow3', 'done');
+          if (clientId) document.getElementById('btnAuthorize').disabled = false;
+        } else {
+          show('resultB1', r.data, true);
+          setStatus('statusB1', 'error', '❌ hata');
+        }
+      }
+
+      async function bLogin() {
+        setStep('flow3', 'active');
+        const r = await req('POST', '/api/auth/login', {
+          email: document.getElementById('b-email').value,
+          password: document.getElementById('b-password').value,
+        });
+        if (r.ok && r.at) {
+          bAt = r.at;
+          document.getElementById('b-access-token').value = bAt;
+          show('resultB1', r.data);
+          setStatus('statusB1', 'done', '✅ giriş yapıldı');
+          markStepNum('numB1');
+          setStep('flow3', 'done');
+          if (clientId) document.getElementById('btnAuthorize').disabled = false;
+        } else {
+          show('resultB1', r.data, true);
+          setStatus('statusB1', 'error', '❌ hata');
+        }
+      }
+
+      async function authorize() {
+        setStep('flow4', 'active');
+        const params = new URLSearchParams({
+          response_type: 'code',
+          client_id: clientId,
+          redirect_uri: 'http://localhost:3002/provider/callback',
+          scope: 'openid profile email',
+          state: 'test_' + Date.now(),
+          mode: 'json',
+        });
+
+        const r = await req('GET', '/api/oauth/authorize?' + params, null, bAt);
+
+        if (r.ok && r.data?.data?.code) {
+          authCode = r.data.data.code;
+
+          // Auto-fill to A's exchange field
+          document.getElementById('a-auth-code').value = authCode;
+          document.getElementById('b-auth-code').value = authCode;
+          document.getElementById('authCodeField').style.display = 'flex';
+
+          show('resultB2', r.data);
+          setStatus('statusB2', 'done', '✅ code üretildi');
+          markStepNum('numB2');
+          setStep('flow4', 'done');
+          document.getElementById('btnExchange').disabled = false;
+        } else {
+          show('resultB2', r.data, true);
+          setStatus('statusB2', 'error', '❌ hata');
+        }
+      }
+
+      async function bGetMe() {
+        const r = await req('GET', '/api/auth/me', null, bAt);
+        show('resultBMe', r.data, !r.ok);
+      }
+
+      // ══════════════════════════════════════
+      // REVOKE
+      // ══════════════════════════════════════
+
+      async function revokeToken() {
+        const res = await fetch('/api/oauth/revoke', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: providerToken,
+            token_type_hint: 'access_token',
+            client_id: clientId,
+            client_secret: clientSecret,
+          }),
+        });
+        // const data = await res.json();
+        // show('resultRevoke', data, !res.ok);
+        // if (res.ok) {
+        //   providerToken = '';
+        //   document.getElementById('btnUserinfo').disabled = true;
+        // }
+      }
+    </script>
+  </body>
+</html>
