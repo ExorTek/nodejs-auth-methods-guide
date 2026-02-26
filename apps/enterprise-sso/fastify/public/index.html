@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Enterprise SSO — Test Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 20px 0 8px;
+        color: #555;
+      }
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        font-family: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+        font-family: monospace;
+        font-size: 0.8rem;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-success {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #6b7280;
+        color: #fff;
+      }
+      .btn-warning {
+        background: #d97706;
+        color: #fff;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      .result {
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .status {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .status.ok {
+        display: block;
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status.err {
+        display: block;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .status.info {
+        display: block;
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        border-bottom-color: #2563eb;
+        color: #2563eb;
+        font-weight: 600;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .token-display {
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🏢 Enterprise SSO — Test Dashboard</h1>
+    <p class="subtitle">OIDC (Azure AD, Google, Okta) & SAML 2.0</p>
+
+    <div
+      id="globalStatus"
+      class="status"></div>
+
+    <!-- Auth State -->
+    <div
+      class="card"
+      id="authCard">
+      <h3>🔐 Auth State</h3>
+      <div id="authStatus">Not logged in</div>
+      <div
+        class="row"
+        style="margin-top: 10px">
+        <button
+          class="btn-secondary"
+          onclick="checkMe()">
+          Check /me
+        </button>
+        <button
+          class="btn-danger"
+          onclick="doLogout()">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div
+        class="tab active"
+        onclick="switchTab('local')">
+        Local Auth
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('sso-config')">
+        SSO Config
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('oidc')">
+        OIDC
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('saml')">
+        SAML
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('discover')">
+        Discover
+      </div>
+    </div>
+
+    <!-- Local Auth Tab -->
+    <div
+      id="tab-local"
+      class="tab-content active">
+      <div class="card">
+        <h3>📝 Register / Login</h3>
+        <div class="row">
+          <div>
+            <label>Username</label>
+            <input
+              id="username"
+              placeholder="johndoe" />
+          </div>
+          <div>
+            <label>Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="john@acme.com" />
+          </div>
+          <div>
+            <label>Password</label>
+            <input
+              id="password"
+              type="password"
+              value="Test@1234" />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="doRegister()">
+          Register
+        </button>
+        <button
+          class="btn-success"
+          onclick="doLogin()">
+          Login
+        </button>
+        <div
+          id="localResult"
+          class="result"
+          style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- SSO Config Tab -->
+    <div
+      id="tab-sso-config"
+      class="tab-content">
+      <div class="card">
+        <h3>⚙️ Create SSO Configuration</h3>
+        <div class="row">
+          <div>
+            <label>Tenant Name</label>
+            <input
+              id="configName"
+              placeholder="Acme Corp" />
+          </div>
+          <div>
+            <label>Domain(s) — comma separated</label>
+            <input
+              id="configDomains"
+              placeholder="acme.com,acme.co.uk" />
+          </div>
+          <div>
+            <label>Protocol</label>
+            <select
+              id="configProtocol"
+              onchange="toggleProtocolFields()">
+              <option value="oidc">OIDC</option>
+              <option value="saml">SAML</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- OIDC Fields -->
+        <div id="oidcFields">
+          <div class="row">
+            <div>
+              <label>OIDC Issuer URL</label>
+              <input
+                id="oidcIssuer"
+                placeholder="https://login.microsoftonline.com/{tenant}/v2.0" />
+            </div>
+            <div>
+              <label>Client ID</label>
+              <input
+                id="oidcClientId"
+                placeholder="your-client-id" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Client Secret</label>
+              <input
+                id="oidcClientSecret"
+                type="password"
+                placeholder="your-client-secret" />
+            </div>
+            <div>
+              <label>Redirect URI</label>
+              <input
+                id="oidcRedirectUri"
+                placeholder="http://localhost:3004/api/sso/oidc/callback" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SAML Fields -->
+        <div
+          id="samlFields"
+          style="display: none">
+          <div class="row">
+            <div>
+              <label>IdP Entity ID</label>
+              <input
+                id="samlIdpEntityId"
+                placeholder="https://sts.windows.net/{tenant}/" />
+            </div>
+            <div>
+              <label>IdP SSO URL</label>
+              <input
+                id="samlIdpSsoUrl"
+                placeholder="https://login.microsoftonline.com/{tenant}/saml2" />
+            </div>
+          </div>
+          <label>IdP Certificate (PEM or Base64)</label>
+          <textarea
+            id="samlIdpCert"
+            placeholder="-----BEGIN CERTIFICATE-----&#10;MIIDp...&#10;-----END CERTIFICATE-----"></textarea>
+        </div>
+
+        <button
+          class="btn-primary"
+          onclick="createConfig()">
+          Create Config
+        </button>
+        <button
+          class="btn-secondary"
+          onclick="listConfigs()">
+          List Configs
+        </button>
+        <div
+          id="configResult"
+          class="result"
+          style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- OIDC Tab -->
+    <div
+      id="tab-oidc"
+      class="tab-content">
+      <div class="card">
+        <h3>🔑 OIDC Login</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Enter email or config ID to start OIDC SSO flow. You'll be redirected to the IdP (Azure AD, Google, Okta).
+        </p>
+        <div class="row">
+          <div>
+            <label>Email (for domain discovery)</label>
+            <input
+              id="oidcEmail"
+              placeholder="john@acme.com" />
+          </div>
+          <div>
+            <label>— or Config ID</label>
+            <input
+              id="oidcConfigId"
+              placeholder="60d5ec..." />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="startOIDC()">
+          Start OIDC Login
+        </button>
+        <div
+          id="oidcResult"
+          class="result"
+          style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- SAML Tab -->
+    <div
+      id="tab-saml"
+      class="tab-content">
+      <div class="card">
+        <h3>📄 SAML Login</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Enter email or config ID to start SAML SP-initiated flow. You'll be redirected to the IdP login page.
+        </p>
+        <div class="row">
+          <div>
+            <label>Email (for domain discovery)</label>
+            <input
+              id="samlEmail"
+              placeholder="john@acme.com" />
+          </div>
+          <div>
+            <label>— or Config ID</label>
+            <input
+              id="samlConfigId"
+              placeholder="60d5ec..." />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="startSAML()">
+          Start SAML Login
+        </button>
+        <button
+          class="btn-secondary"
+          onclick="fetchMetadata()">
+          Download SP Metadata
+        </button>
+        <div
+          id="samlResult"
+          class="result"
+          style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- Discover Tab -->
+    <div
+      id="tab-discover"
+      class="tab-content">
+      <div class="card">
+        <h3>🔍 SSO Discovery</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Enter an email to check if SSO is configured for that domain.
+        </p>
+        <label>Email</label>
+        <input
+          id="discoverEmail"
+          placeholder="john@acme.com" />
+        <button
+          class="btn-primary"
+          onclick="discoverSSO()">
+          Discover
+        </button>
+        <div
+          id="discoverResult"
+          class="result"
+          style="display: none"></div>
+      </div>
+    </div>
+
+    <script>
+      let accessToken = '';
+      let refreshToken = '';
+
+      // Tab switching
+      function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      function toggleProtocolFields() {
+        const proto = document.getElementById('configProtocol').value;
+        document.getElementById('oidcFields').style.display = proto === 'oidc' ? '' : 'none';
+        document.getElementById('samlFields').style.display = proto === 'saml' ? '' : 'none';
+      }
+
+      // API helper
+      async function api(url, options = {}) {
+        const headers = { ...options.headers };
+        if (options.body && !(options.body instanceof FormData)) {
+          headers['Content-Type'] = 'application/json';
+        }
+        if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+        if (refreshToken) headers['X-Refresh-Token'] = refreshToken;
+
+        const res = await fetch(url, {
+          ...options,
+          headers,
+          body: options.body ? JSON.stringify(options.body) : undefined,
+        });
+
+        const newAccess = res.headers.get('authorization');
+        const newRefresh = res.headers.get('x-refresh-token');
+        if (newAccess) accessToken = newAccess.replace('Bearer ', '');
+        if (newRefresh) refreshToken = newRefresh;
+
+        return { status: res.status, data: await res.json().catch(() => null) };
+      }
+
+      function showResult(id, data) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.textContent = JSON.stringify(data, null, 2);
+      }
+
+      function updateAuth(label) {
+        document.getElementById('authStatus').textContent = label;
+      }
+
+      // ─── Local Auth ───
+      async function doRegister() {
+        const r = await api('/api/auth/register', {
+          method: 'POST',
+          body: {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          },
+        });
+        showResult('localResult', r.data);
+        if (r.status < 300) updateAuth('✅ Registered as ' + r.data?.data?.user?.username);
+      }
+
+      async function doLogin() {
+        const r = await api('/api/auth/login', {
+          method: 'POST',
+          body: {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          },
+        });
+        showResult('localResult', r.data);
+        if (r.status < 300) updateAuth('✅ Logged in as ' + r.data?.data?.user?.username);
+      }
+
+      async function checkMe() {
+        const r = await api('/api/auth/me');
+        showResult('localResult', r.data);
+        const s = document.getElementById('globalStatus');
+        if (r.status === 200) {
+          s.className = 'status ok';
+          s.textContent = '✅ Authenticated: ' + r.data?.data?.user?.email;
+        } else {
+          s.className = 'status err';
+          s.textContent = '❌ Not authenticated';
+        }
+      }
+
+      async function doLogout() {
+        await api('/api/auth/logout', { method: 'POST' });
+        accessToken = '';
+        refreshToken = '';
+        updateAuth('Not logged in');
+        const s = document.getElementById('globalStatus');
+        s.className = 'status info';
+        s.textContent = 'Logged out';
+      }
+
+      // ─── SSO Config ───
+      async function createConfig() {
+        const proto = document.getElementById('configProtocol').value;
+        const body = {
+          name: document.getElementById('configName').value,
+          domains: document
+            .getElementById('configDomains')
+            .value.split(',')
+            .map(d => d.trim()),
+          protocol: proto,
+        };
+        if (proto === 'oidc') {
+          body.issuer = document.getElementById('oidcIssuer').value;
+          body.clientId = document.getElementById('oidcClientId').value;
+          body.clientSecret = document.getElementById('oidcClientSecret').value;
+          body.redirectUri = document.getElementById('oidcRedirectUri').value || undefined;
+        } else {
+          body.idpEntityId = document.getElementById('samlIdpEntityId').value;
+          body.idpSsoUrl = document.getElementById('samlIdpSsoUrl').value;
+          body.idpCertificate = document.getElementById('samlIdpCert').value;
+        }
+        const r = await api('/api/sso/configs', { method: 'POST', body });
+        showResult('configResult', r.data);
+      }
+
+      async function listConfigs() {
+        const r = await api('/api/sso/configs');
+        showResult('configResult', r.data);
+      }
+
+      // ─── OIDC ───
+      async function startOIDC() {
+        const body = {};
+        const email = document.getElementById('oidcEmail').value;
+        const configId = document.getElementById('oidcConfigId').value;
+        if (configId) body.configId = configId;
+        else if (email) body.email = email;
+
+        const r = await api('/api/sso/oidc/init', { method: 'POST', body });
+        showResult('oidcResult', r.data);
+
+        if (r.data?.data?.authUrl) {
+          window.location.href = r.data.data.authUrl;
+        }
+      }
+
+      // ─── SAML ───
+      async function startSAML() {
+        const body = {};
+        const email = document.getElementById('samlEmail').value;
+        const configId = document.getElementById('samlConfigId').value;
+        if (configId) body.configId = configId;
+        else if (email) body.email = email;
+
+        const r = await api('/api/sso/saml/init', { method: 'POST', body });
+        showResult('samlResult', r.data);
+
+        if (r.data?.data?.authUrl) {
+          window.location.href = r.data.data.authUrl;
+        }
+      }
+
+      async function fetchMetadata() {
+        const res = await fetch('/api/sso/saml/metadata');
+        const xml = await res.text();
+        showResult('samlResult', xml);
+      }
+
+      // ─── Discover ───
+      async function discoverSSO() {
+        const r = await api('/api/sso/discover', {
+          method: 'POST',
+          body: { email: document.getElementById('discoverEmail').value },
+        });
+        showResult('discoverResult', r.data);
+      }
+
+      // ─── Check for ticket on page load ───
+      const params = new URLSearchParams(window.location.search);
+      const ticket = params.get('ticket');
+      if (ticket) {
+        window.history.replaceState({}, '', '/');
+        api('/api/auth/exchange', { method: 'POST', body: { ticket } }).then(r => {
+          if (r.status < 300) {
+            updateAuth('✅ SSO login: ' + (r.data?.data?.user?.email || 'success'));
+            const s = document.getElementById('globalStatus');
+            s.className = 'status ok';
+            s.textContent = '✅ SSO authentication successful!';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

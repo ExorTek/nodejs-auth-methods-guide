@@ -5,6 +5,22 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@auth-guide/enterprise-sso-express@workspace:apps/enterprise-sso/express":
+  version: 0.0.0-use.local
+  resolution: "@auth-guide/enterprise-sso-express@workspace:apps/enterprise-sso/express"
+  dependencies:
+    "@auth-guide/shared": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@auth-guide/enterprise-sso-fastify@workspace:apps/enterprise-sso/fastify":
+  version: 0.0.0-use.local
+  resolution: "@auth-guide/enterprise-sso-fastify@workspace:apps/enterprise-sso/fastify"
+  dependencies:
+    "@auth-guide/shared": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@auth-guide/jwt-auth-express@workspace:apps/jwt-auth/express":
   version: 0.0.0-use.local
   resolution: "@auth-guide/jwt-auth-express@workspace:apps/jwt-auth/express"

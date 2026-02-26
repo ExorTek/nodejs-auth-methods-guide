@@ -1,0 +1,16 @@
+{
+  "name": "@auth-guide/enterprise-sso-express",
+  "version": "1.0.0",
+  "description": "Enterprise SSO with OIDC & SAML 2.0 using Express — Azure AD, Google Workspace, Okta, Keycloak",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test *.test.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*"
+  }
+}
