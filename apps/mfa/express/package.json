@@ -1,0 +1,17 @@
+{
+  "name": "@auth-guide/mfa-express",
+  "version": "1.0.0",
+  "description": "Multi-Factor Authentication — TOTP, SMS OTP, Email OTP, Backup Codes with Express",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test *.test.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*",
+    "qrcode": "^1.5.4"
+  }
+}
