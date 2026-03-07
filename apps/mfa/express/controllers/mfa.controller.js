@@ -2,9 +2,17 @@ import QRCode from 'qrcode';
 import { CustomError, encrypt, decrypt, logger } from '@auth-guide/shared';
 import User from '../models/User.js';
 import MFAChallenge from '../models/MFAChallenge.js';
-import { generateSecret, verifyTOTP, buildOtpauthUri } from '@auth-guide/shared/utils/totp.js';
-import { generateOTP, sendEmailOTP, sendSMSOTP } from '@auth-guide/shared/utils/otp.js';
-import { generateBackupCodes, hashBackupCodes, verifyBackupCode } from '@auth-guide/shared/utils/backup.js';
+import {
+  generateSecret,
+  verifyTOTP,
+  buildOtpauthUri,
+  generateOTP,
+  sendEmailOTP,
+  sendSMSOTP,
+  generateBackupCodes,
+  hashBackupCodes,
+  verifyBackupCode,
+} from '@auth-guide/shared';
 import { createTokenPair, sendTokenResponse, formatUser } from '../utils/token.js';
 
 const TOTP_ISSUER = process.env.TOTP_ISSUER || 'AuthGuide';

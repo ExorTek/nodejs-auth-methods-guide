@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>MFA — Test Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-success {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #6b7280;
+        color: #fff;
+      }
+      .btn-warning {
+        background: #d97706;
+        color: #fff;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      .result {
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+      .status {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .status.ok {
+        display: block;
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status.err {
+        display: block;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .status.info {
+        display: block;
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        border-bottom-color: #2563eb;
+        color: #2563eb;
+        font-weight: 600;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      #qrImg {
+        max-width: 200px;
+        margin: 10px 0;
+        border: 1px solid #eee;
+        border-radius: 8px;
+      }
+      .backup-codes {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        font-family: monospace;
+        font-size: 0.9rem;
+      }
+      .backup-codes span {
+        background: #f0f0f0;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔐 Multi-Factor Authentication — Test Dashboard</h1>
+    <p class="subtitle">TOTP, SMS OTP, Email OTP, Backup Codes</p>
+
+    <div
+      id="globalStatus"
+      class="status"></div>
+
+    <div
+      class="card"
+      id="authCard">
+      <h3>👤 Auth State</h3>
+      <div id="authStatus">Not logged in</div>
+      <div
+        class="row"
+        style="margin-top: 10px">
+        <button
+          class="btn-secondary"
+          onclick="checkMe()">
+          Check /me
+        </button>
+        <button
+          class="btn-secondary"
+          onclick="checkMfaStatus()">
+          MFA Status
+        </button>
+        <button
+          class="btn-danger"
+          onclick="doLogout()">
+          Logout
+        </button>
+      </div>
+      <div
+        id="authResult"
+        class="result"></div>
+    </div>
+
+    <div class="tabs">
+      <div
+        class="tab active"
+        onclick="switchTab('auth')">
+        Login/Register
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('totp')">
+        TOTP
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('sms')">
+        SMS
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('email')">
+        Email
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('verify')">
+        Verify MFA
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('manage')">
+        Manage
+      </div>
+    </div>
+
+    <!-- Auth Tab -->
+    <div
+      id="tab-auth"
+      class="tab-content active">
+      <div class="card">
+        <h3>📝 Register / Login</h3>
+        <div class="row">
+          <div>
+            <label>Username</label
+            ><input
+              id="username"
+              placeholder="johndoe" />
+          </div>
+          <div>
+            <label>Email</label
+            ><input
+              id="email"
+              type="email"
+              placeholder="john@example.com" />
+          </div>
+          <div>
+            <label>Password</label
+            ><input
+              id="password"
+              type="password"
+              value="Test@1234" />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="doRegister()">
+          Register
+        </button>
+        <button
+          class="btn-success"
+          onclick="doLogin()">
+          Login
+        </button>
+        <div
+          id="loginResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- TOTP Tab -->
+    <div
+      id="tab-totp"
+      class="tab-content">
+      <div class="card">
+        <h3>📱 TOTP Setup (Google Authenticator)</h3>
+        <button
+          class="btn-primary"
+          onclick="setupTotp()">
+          Generate QR Code
+        </button>
+        <div
+          id="qrContainer"
+          style="display: none">
+          <img
+            id="qrImg"
+            src="" />
+          <div
+            id="totpSecret"
+            style="font-family: monospace; font-size: 0.85rem; margin: 8px 0"></div>
+          <label>Enter code from app</label>
+          <input
+            id="totpSetupCode"
+            placeholder="123456"
+            maxlength="6" />
+          <button
+            class="btn-success"
+            onclick="verifyTotpSetup()">
+            Confirm Setup
+          </button>
+        </div>
+        <div
+          id="totpResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- SMS Tab -->
+    <div
+      id="tab-sms"
+      class="tab-content">
+      <div class="card">
+        <h3>📲 SMS OTP Setup</h3>
+        <label>Phone (E.164)</label>
+        <input
+          id="smsPhone"
+          placeholder="+1234567890" />
+        <button
+          class="btn-primary"
+          onclick="setupSms()">
+          Send Verification Code
+        </button>
+        <label>Enter code</label>
+        <input
+          id="smsSetupCode"
+          placeholder="123456"
+          maxlength="6" />
+        <button
+          class="btn-success"
+          onclick="verifySmsSetup()">
+          Confirm Setup
+        </button>
+        <div
+          id="smsResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Email Tab -->
+    <div
+      id="tab-email"
+      class="tab-content">
+      <div class="card">
+        <h3>📧 Email OTP Setup</h3>
+        <button
+          class="btn-primary"
+          onclick="setupEmailMfa()">
+          Send Verification Email
+        </button>
+        <label>Enter code from email</label>
+        <input
+          id="emailSetupCode"
+          placeholder="123456"
+          maxlength="6" />
+        <button
+          class="btn-success"
+          onclick="verifyEmailSetup()">
+          Confirm Setup
+        </button>
+        <div
+          id="emailResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Verify MFA Tab -->
+    <div
+      id="tab-verify"
+      class="tab-content">
+      <div class="card">
+        <h3>✅ Verify MFA Challenge</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          After login with MFA enabled, verify your identity here.
+        </p>
+        <div class="row">
+          <div>
+            <label>Method</label>
+            <select id="verifyMethod">
+              <option value="totp">TOTP</option>
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
+              <option value="backup">Backup Code</option>
+            </select>
+          </div>
+          <div>
+            <label>Code</label>
+            <input
+              id="verifyCode"
+              placeholder="123456 or xxxx-xxxx" />
+          </div>
+        </div>
+        <button
+          class="btn-warning"
+          onclick="sendMfaChallenge()">
+          Send Challenge (SMS/Email)
+        </button>
+        <button
+          class="btn-success"
+          onclick="verifyMfa()">
+          Verify
+        </button>
+        <div
+          id="verifyResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Manage Tab -->
+    <div
+      id="tab-manage"
+      class="tab-content">
+      <div class="card">
+        <h3>⚙️ Manage MFA</h3>
+        <label>Password (required for disable/regenerate)</label>
+        <input
+          id="managePassword"
+          type="password"
+          placeholder="Your password" />
+        <button
+          class="btn-danger"
+          onclick="disableMfa()">
+          Disable MFA
+        </button>
+        <button
+          class="btn-warning"
+          onclick="regenCodes()">
+          Regenerate Backup Codes
+        </button>
+        <div
+          id="backupCodesContainer"
+          style="display: none">
+          <h3 style="margin-top: 12px">🔑 Backup Codes — SAVE THESE!</h3>
+          <div
+            id="backupCodes"
+            class="backup-codes"></div>
+        </div>
+        <div
+          id="manageResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      let accessToken = '',
+        refreshToken = '';
+
+      function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      async function api(url, opts = {}) {
+        const headers = { ...opts.headers };
+        if (opts.body) headers['Content-Type'] = 'application/json';
+        if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+        if (refreshToken) headers['X-Refresh-Token'] = refreshToken;
+        const res = await fetch(url, { ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+        const na = res.headers.get('authorization'),
+          nr = res.headers.get('x-refresh-token');
+        if (na) accessToken = na.replace('Bearer ', '');
+        if (nr) refreshToken = nr;
+        return { status: res.status, data: await res.json().catch(() => null) };
+      }
+
+      function show(id, data) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.textContent = JSON.stringify(data, null, 2);
+      }
+      function setAuth(t) {
+        document.getElementById('authStatus').textContent = t;
+      }
+      function showBackupCodes(codes) {
+        const c = document.getElementById('backupCodes');
+        c.innerHTML = codes.map(code => '<span>' + code + '</span>').join('');
+        document.getElementById('backupCodesContainer').style.display = '';
+      }
+
+      // Auth
+      async function doRegister() {
+        const r = await api('/api/auth/register', {
+          method: 'POST',
+          body: {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          },
+        });
+        show('loginResult', r.data);
+        if (r.status < 300) setAuth('✅ Registered: ' + r.data?.data?.user?.username);
+      }
+      async function doLogin() {
+        const r = await api('/api/auth/login', {
+          method: 'POST',
+          body: { email: document.getElementById('email').value, password: document.getElementById('password').value },
+        });
+        show('loginResult', r.data);
+        if (r.status < 300) {
+          const d = r.data?.data;
+          setAuth(d.mfaRequired ? '⚠️ MFA required — go to Verify tab' : '✅ Logged in: ' + d.user?.username);
+        }
+      }
+      async function checkMe() {
+        const r = await api('/api/auth/me');
+        show('authResult', r.data);
+      }
+      async function doLogout() {
+        await api('/api/auth/logout', { method: 'POST' });
+        accessToken = '';
+        refreshToken = '';
+        setAuth('Not logged in');
+      }
+      async function checkMfaStatus() {
+        const r = await api('/api/mfa/status');
+        show('authResult', r.data);
+      }
+
+      // TOTP
+      async function setupTotp() {
+        const r = await api('/api/mfa/totp/setup', { method: 'POST' });
+        show('totpResult', r.data);
+        if (r.data?.data?.qrCode) {
+          document.getElementById('qrImg').src = r.data.data.qrCode;
+          document.getElementById('totpSecret').textContent = 'Secret: ' + r.data.data.secret;
+          document.getElementById('qrContainer').style.display = '';
+        }
+      }
+      async function verifyTotpSetup() {
+        const r = await api('/api/mfa/totp/verify-setup', {
+          method: 'POST',
+          body: { code: document.getElementById('totpSetupCode').value },
+        });
+        show('totpResult', r.data);
+        if (r.data?.data?.backupCodes) showBackupCodes(r.data.data.backupCodes);
+      }
+
+      // SMS
+      async function setupSms() {
+        const r = await api('/api/mfa/sms/setup', {
+          method: 'POST',
+          body: { phone: document.getElementById('smsPhone').value },
+        });
+        show('smsResult', r.data);
+      }
+      async function verifySmsSetup() {
+        const r = await api('/api/mfa/sms/verify-setup', {
+          method: 'POST',
+          body: { code: document.getElementById('smsSetupCode').value },
+        });
+        show('smsResult', r.data);
+        if (r.data?.data?.backupCodes) showBackupCodes(r.data.data.backupCodes);
+      }
+
+      // Email
+      async function setupEmailMfa() {
+        const r = await api('/api/mfa/email/setup', { method: 'POST' });
+        show('emailResult', r.data);
+      }
+      async function verifyEmailSetup() {
+        const r = await api('/api/mfa/email/verify-setup', {
+          method: 'POST',
+          body: { code: document.getElementById('emailSetupCode').value },
+        });
+        show('emailResult', r.data);
+        if (r.data?.data?.backupCodes) showBackupCodes(r.data.data.backupCodes);
+      }
+
+      // MFA Challenge & Verify
+      async function sendMfaChallenge() {
+        const method = document.getElementById('verifyMethod').value;
+        const r = await api('/api/mfa/challenge', { method: 'POST', body: { method } });
+        show('verifyResult', r.data);
+      }
+      async function verifyMfa() {
+        const r = await api('/api/mfa/verify', {
+          method: 'POST',
+          body: {
+            method: document.getElementById('verifyMethod').value,
+            code: document.getElementById('verifyCode').value,
+          },
+        });
+        show('verifyResult', r.data);
+        if (r.status < 300) setAuth('✅ MFA verified: ' + (r.data?.data?.user?.username || 'success'));
+      }
+
+      // Manage
+      async function disableMfa() {
+        const r = await api('/api/mfa/disable', {
+          method: 'POST',
+          body: { password: document.getElementById('managePassword').value },
+        });
+        show('manageResult', r.data);
+      }
+      async function regenCodes() {
+        const r = await api('/api/mfa/backup-codes/regenerate', {
+          method: 'POST',
+          body: { password: document.getElementById('managePassword').value },
+        });
+        show('manageResult', r.data);
+        if (r.data?.data?.backupCodes) showBackupCodes(r.data.data.backupCodes);
+      }
+    </script>
+  </body>
+</html>

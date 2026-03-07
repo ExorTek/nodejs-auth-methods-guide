@@ -20,7 +20,8 @@
     "jwt:test:fastify": "yarn workspace @auth-guide/jwt-auth-fastify test",
     "oauth:test:express": "yarn workspace @auth-guide/oauth-social-login-express test",
     "oauth:test:fastify": "yarn workspace @auth-guide/oauth-social-login-fastify test",
-    "mfa:express": "yarn workspace @auth-guide/mfa-express dev"
+    "mfa:express": "yarn workspace @auth-guide/mfa-express dev",
+    "mfa:fastify": "yarn workspace @auth-guide/mfa-fastify dev"
   },
   "workspaces": [
     "apps/*/*",
@@ -40,6 +41,7 @@
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "qrcode": "^1.5.4",
     "redis": "^5.10.0",
     "twilio": "^5.12.2"
   },

@@ -1,7 +1,7 @@
 {
-  "name": "@auth-guide/mfa-express",
+  "name": "@auth-guide/mfa-fastify",
   "version": "1.0.0",
-  "description": "Multi-Factor Authentication — TOTP, SMS OTP, Email OTP, Backup Codes with Express",
+  "description": "Multi-Factor Authentication — TOTP, SMS OTP, Email OTP, Backup Codes with Fastify",
   "private": true,
   "type": "module",
   "main": "server.js",
