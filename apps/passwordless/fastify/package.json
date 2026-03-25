@@ -1,0 +1,17 @@
+{
+  "name": "@auth-guide/passwordless-fastify",
+  "version": "1.0.0",
+  "description": "Passwordless Authentication — Magic Links, WebAuthn/FIDO2, Passkeys with Fastify",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test *.test.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*",
+    "@simplewebauthn/server": "^13.3.0"
+  }
+}

@@ -21,7 +21,9 @@
     "oauth:test:express": "yarn workspace @auth-guide/oauth-social-login-express test",
     "oauth:test:fastify": "yarn workspace @auth-guide/oauth-social-login-fastify test",
     "mfa:express": "yarn workspace @auth-guide/mfa-express dev",
-    "mfa:fastify": "yarn workspace @auth-guide/mfa-fastify dev"
+    "mfa:fastify": "yarn workspace @auth-guide/mfa-fastify dev",
+    "pwd:express": "yarn workspace @auth-guide/passwordless-express dev",
+    "pwd:fastify": "yarn workspace @auth-guide/passwordless-fastify dev"
   },
   "workspaces": [
     "apps/*/*",
@@ -84,7 +86,7 @@
     "tutorial",
     "production-ready"
   ],
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.13.0",
   "engines": {
     "node": ">=20.0.0",
     "yarn": ">=4.0.0"

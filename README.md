@@ -12,7 +12,7 @@ A comprehensive **8-article series** covering every major authentication method 
 | 3   | OAuth 2.0 & Social Login          | Express + Fastify | [Read](https://medium.com/@mem3t/oauth-2-0-social-login-google-ile-giriş-yap-butonunun-arkasındaki-dünya-91000af00844) | [Code](apps/oauth-social-login/) | ✅     |
 | 4   | Enterprise SSO (OIDC & SAML)      | Express + Fastify | [Read](https://medium.com/@mem3t/enterprise-sso-kurumsal-dünyanın-giriş-kapısı-oidc-saml-2-0-dfd49162f019)             | [Code](apps/enterprise-sso/)     | ✅     |
 | 5   | Multi-Factor Authentication       | Express + Fastify | [Read](https://medium.com/@mem3t/multi-factor-authentication-%C5%9Fifrenin-%C3%B6tesinde-g%C3%BCvenlik-2265216ba18d)   | [Code](apps/mfa/)                | ✅     |
-| 6   | Passwordless (WebAuthn, Passkeys) | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 6   | Passwordless (WebAuthn, Passkeys) | Express + Fastify | [Read](https://medium.com/@mem3t/passwordless-authentication-şifreler-tarih-oluyor-216b717d3269)                       | [Code](apps/passwordless/)       | ✅     |
 | 7   | Blockchain & Web3 Auth            | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
 | 8   | API & Service-to-Service          | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
 
@@ -24,10 +24,10 @@ auth-methods-guide/
 │   ├── shared/                  # Shared utilities (logger, crypto, errors, validators etc.)
 │   ├── jwt-auth/                # Article 2
 │   ├── session-auth/            # Article 1
-│   ├── oauth-social-login/      # Article 3 (coming soon)
-│   ├── enterprise-sso/          # Article 4 (coming soon)
-│   ├── mfa/                     # Article 5 (coming soon)
-│   ├── passwordless/            # Article 6 (coming soon)
+│   ├── oauth-social-login/      # Article 3
+│   ├── enterprise-sso/          # Article 4
+│   ├── mfa/                     # Article 5
+│   ├── passwordless/            # Article 6
 │   ├── web3-auth/               # Article 7 (coming soon)
 │   ├── service-auth/            # Article 8 (coming soon)
 │   └── ...

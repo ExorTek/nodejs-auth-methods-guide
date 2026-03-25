@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Passwordless Auth — Test Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-success {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #6b7280;
+        color: #fff;
+      }
+      .btn-warning {
+        background: #d97706;
+        color: #fff;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      .result {
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+      .status {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .status.ok {
+        display: block;
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status.err {
+        display: block;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .status.info {
+        display: block;
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        border-bottom-color: #2563eb;
+        color: #2563eb;
+        font-weight: 600;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔑 Passwordless Auth — Test Dashboard</h1>
+    <p class="subtitle">Magic Links + WebAuthn / Passkeys</p>
+
+    <div
+      id="globalStatus"
+      class="status"></div>
+
+    <div class="card">
+      <h3>👤 Auth State</h3>
+      <div id="authStatus">Not logged in</div>
+      <div
+        class="row"
+        style="margin-top: 10px">
+        <button
+          class="btn-secondary"
+          onclick="checkMe()">
+          Check /me
+        </button>
+        <button
+          class="btn-secondary"
+          onclick="listPasskeys()">
+          My Passkeys
+        </button>
+        <button
+          class="btn-danger"
+          onclick="doLogout()">
+          Logout
+        </button>
+      </div>
+      <div
+        id="authResult"
+        class="result"></div>
+    </div>
+
+    <div class="tabs">
+      <div
+        class="tab active"
+        onclick="switchTab('register')">
+        Register
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('magic')">
+        Magic Link
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('passkey-setup')">
+        Setup Passkey
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('passkey-login')">
+        Passkey Login
+      </div>
+    </div>
+
+    <!-- Register Tab -->
+    <div
+      id="tab-register"
+      class="tab-content active">
+      <div class="card">
+        <h3>📝 Register (optional password)</h3>
+        <div class="row">
+          <div>
+            <label>Username</label
+            ><input
+              id="regUsername"
+              placeholder="johndoe" />
+          </div>
+          <div>
+            <label>Email</label
+            ><input
+              id="regEmail"
+              type="email"
+              placeholder="john@example.com" />
+          </div>
+          <div>
+            <label>Password (optional)</label
+            ><input
+              id="regPassword"
+              type="password"
+              placeholder="Leave empty for magic-link only" />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="doRegister()">
+          Register
+        </button>
+        <button
+          class="btn-success"
+          onclick="doLogin()">
+          Login (password)
+        </button>
+        <div
+          id="registerResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Magic Link Tab -->
+    <div
+      id="tab-magic"
+      class="tab-content">
+      <div class="card">
+        <h3>✉️ Magic Link</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Enter your email to receive a sign-in link. No password needed.
+        </p>
+        <label>Email</label>
+        <input
+          id="magicEmail"
+          type="email"
+          placeholder="john@example.com" />
+        <button
+          class="btn-primary"
+          onclick="sendMagicLink()">
+          Send Magic Link
+        </button>
+        <div
+          id="magicResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Passkey Setup Tab -->
+    <div
+      id="tab-passkey-setup"
+      class="tab-content">
+      <div class="card">
+        <h3>🔐 Register a Passkey</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Must be logged in first. Registers your fingerprint / Face ID / security key.
+        </p>
+        <label>Device Name (optional)</label>
+        <input
+          id="passkeyName"
+          placeholder="My MacBook" />
+        <button
+          class="btn-primary"
+          onclick="registerPasskey()">
+          Register Passkey
+        </button>
+        <div
+          id="passkeySetupResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Passkey Login Tab -->
+    <div
+      id="tab-passkey-login"
+      class="tab-content">
+      <div class="card">
+        <h3>🔓 Login with Passkey</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          No email or password needed — just your biometric.
+        </p>
+        <label>Email (optional — leave empty for discoverable credentials)</label>
+        <input
+          id="passkeyLoginEmail"
+          type="email"
+          placeholder="john@example.com (optional)" />
+        <button
+          class="btn-success"
+          onclick="loginWithPasskey()">
+          Login with Passkey
+        </button>
+        <div
+          id="passkeyLoginResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      let accessToken = '',
+        refreshToken = '';
+
+      function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      async function api(url, opts = {}) {
+        const headers = { ...opts.headers };
+        if (opts.body && typeof opts.body === 'object') headers['Content-Type'] = 'application/json';
+        if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+        if (refreshToken) headers['X-Refresh-Token'] = refreshToken;
+        const res = await fetch(url, { ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+        const na = res.headers.get('authorization'),
+          nr = res.headers.get('x-refresh-token');
+        if (na) accessToken = na.replace('Bearer ', '');
+        if (nr) refreshToken = nr;
+        return { status: res.status, data: await res.json().catch(() => null) };
+      }
+
+      function show(id, data) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.textContent = JSON.stringify(data, null, 2);
+      }
+      function setAuth(t) {
+        document.getElementById('authStatus').textContent = t;
+      }
+      function setStatus(cls, msg) {
+        const s = document.getElementById('globalStatus');
+        s.className = 'status ' + cls;
+        s.textContent = msg;
+      }
+
+      // ─── Register / Login ───
+      async function doRegister() {
+        const body = {
+          username: document.getElementById('regUsername').value,
+          email: document.getElementById('regEmail').value,
+        };
+        const pw = document.getElementById('regPassword').value;
+        if (pw) body.password = pw;
+        const r = await api('/api/auth/register', { method: 'POST', body });
+        show('registerResult', r.data);
+        if (r.status < 300) setAuth('✅ Registered: ' + r.data?.data?.user?.username);
+      }
+
+      async function doLogin() {
+        const r = await api('/api/auth/login', {
+          method: 'POST',
+          body: {
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+          },
+        });
+        show('registerResult', r.data);
+        if (r.status < 300) setAuth('✅ Logged in: ' + r.data?.data?.user?.username);
+      }
+
+      async function checkMe() {
+        const r = await api('/api/auth/me');
+        show('authResult', r.data);
+      }
+      async function doLogout() {
+        await api('/api/auth/logout', { method: 'POST' });
+        accessToken = '';
+        refreshToken = '';
+        setAuth('Not logged in');
+      }
+
+      // ─── Magic Link ───
+      async function sendMagicLink() {
+        const r = await api('/api/auth/magic-link/send', {
+          method: 'POST',
+          body: { email: document.getElementById('magicEmail').value },
+        });
+        show('magicResult', r.data);
+        if (r.status < 300)
+          setStatus('info', 'Magic link sent! Check your email (or Ethereal preview in server logs).');
+      }
+
+      // ─── Passkey Registration ───
+      async function registerPasskey() {
+        try {
+          // 1. Get registration options from server
+          const optRes = await api('/api/auth/webauthn/register/options', { method: 'POST' });
+          if (optRes.status >= 300) {
+            show('passkeySetupResult', optRes.data);
+            return;
+          }
+          const options = optRes.data.data;
+
+          // 2. Convert base64url fields for browser API
+          options.challenge = base64urlToBuffer(options.challenge);
+          options.user.id = base64urlToBuffer(options.user.id);
+          if (options.excludeCredentials) {
+            options.excludeCredentials = options.excludeCredentials.map(c => ({ ...c, id: base64urlToBuffer(c.id) }));
+          }
+
+          // 3. Call browser WebAuthn API
+          const credential = await navigator.credentials.create({ publicKey: options });
+
+          // 4. Send response to server
+          const body = {
+            id: credential.id,
+            rawId: bufferToBase64url(credential.rawId),
+            type: credential.type,
+            response: {
+              attestationObject: bufferToBase64url(credential.response.attestationObject),
+              clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+              transports: credential.response.getTransports?.() || [],
+            },
+            deviceName: document.getElementById('passkeyName').value || 'Passkey',
+          };
+
+          const verRes = await api('/api/auth/webauthn/register/verify', { method: 'POST', body });
+          show('passkeySetupResult', verRes.data);
+          if (verRes.status < 300) setStatus('ok', 'Passkey registered!');
+        } catch (err) {
+          show('passkeySetupResult', { error: err.message });
+        }
+      }
+
+      // ─── Passkey Login ───
+      async function loginWithPasskey() {
+        try {
+          const email = document.getElementById('passkeyLoginEmail').value || undefined;
+          const optRes = await api('/api/auth/webauthn/login/options', { method: 'POST', body: { email } });
+          if (optRes.status >= 300) {
+            show('passkeyLoginResult', optRes.data);
+            return;
+          }
+          const options = optRes.data.data;
+
+          options.challenge = base64urlToBuffer(options.challenge);
+          if (options.allowCredentials) {
+            options.allowCredentials = options.allowCredentials.map(c => ({ ...c, id: base64urlToBuffer(c.id) }));
+          }
+
+          const credential = await navigator.credentials.get({ publicKey: options });
+
+          const body = {
+            id: credential.id,
+            rawId: bufferToBase64url(credential.rawId),
+            type: credential.type,
+            response: {
+              authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+              clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+              signature: bufferToBase64url(credential.response.signature),
+              userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null,
+            },
+          };
+
+          const verRes = await api('/api/auth/webauthn/login/verify', { method: 'POST', body });
+          show('passkeyLoginResult', verRes.data);
+          if (verRes.status < 300) setAuth('✅ Passkey login: ' + (verRes.data?.data?.user?.username || 'success'));
+        } catch (err) {
+          show('passkeyLoginResult', { error: err.message });
+        }
+      }
+
+      async function listPasskeys() {
+        const r = await api('/api/auth/webauthn/credentials');
+        show('authResult', r.data);
+      }
+
+      // ─── Base64URL helpers ───
+      function base64urlToBuffer(base64url) {
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = base64.length % 4 === 0 ? '' : '='.repeat(4 - (base64.length % 4));
+        const binary = atob(base64 + pad);
+        return Uint8Array.from(binary, c => c.charCodeAt(0)).buffer;
+      }
+
+      function bufferToBase64url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (const b of bytes) binary += String.fromCharCode(b);
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      }
+
+      // ─── Check for magic link callback tokens ───
+      const params = new URLSearchParams(window.location.search);
+      const at = params.get('access_token'),
+        rt = params.get('refresh_token');
+      if (at) {
+        accessToken = at;
+        refreshToken = rt || '';
+        window.history.replaceState({}, '', '/');
+        setAuth('✅ Magic link login successful!');
+        setStatus('ok', 'Signed in via magic link!');
+      }
+    </script>
+  </body>
+</html>
