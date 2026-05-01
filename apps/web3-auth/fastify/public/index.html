@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Web3 Auth — Test Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        font-family: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 60px;
+        font-family: monospace;
+        font-size: 0.8rem;
+      }
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .btn-success {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-danger {
+        background: #dc2626;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: #6b7280;
+        color: #fff;
+      }
+      .btn-eth {
+        background: #627eea;
+        color: #fff;
+      }
+      .btn-sol {
+        background: #9945ff;
+        color: #fff;
+      }
+      .btn-btc {
+        background: #f7931a;
+        color: #fff;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      .result {
+        background: #f8f9fa;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+      .status {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .status.ok {
+        display: block;
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status.err {
+        display: block;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .status.info {
+        display: block;
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        border-bottom-color: #2563eb;
+        color: #2563eb;
+        font-weight: 600;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>⛓️ Web3 Auth — Test Dashboard</h1>
+    <p class="subtitle">Ethereum (SIWE) + Solana + Bitcoin — Multi-Chain Wallet Authentication</p>
+
+    <div
+      id="globalStatus"
+      class="status"></div>
+
+    <div class="card">
+      <h3>👤 Auth State</h3>
+      <div id="authStatus">Not connected</div>
+      <div
+        class="row"
+        style="margin-top: 10px">
+        <button
+          class="btn-secondary"
+          onclick="checkMe()">
+          Check /me
+        </button>
+        <button
+          class="btn-secondary"
+          onclick="listWallets()">
+          My Wallets
+        </button>
+        <button
+          class="btn-danger"
+          onclick="doLogout()">
+          Logout
+        </button>
+      </div>
+      <div
+        id="authResult"
+        class="result"></div>
+    </div>
+
+    <div class="tabs">
+      <div
+        class="tab active"
+        onclick="switchTab('ethereum')">
+        🔷 Ethereum
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('solana')">
+        🟣 Solana
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('bitcoin')">
+        🟠 Bitcoin
+      </div>
+      <div
+        class="tab"
+        onclick="switchTab('manual')">
+        🔧 Manual
+      </div>
+    </div>
+
+    <!-- Ethereum Tab -->
+    <div
+      id="tab-ethereum"
+      class="tab-content active">
+      <div class="card">
+        <h3>🔷 Ethereum — Sign-In with Ethereum (SIWE)</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">Connect MetaMask or any EIP-1193 wallet.</p>
+        <button
+          class="btn-eth"
+          onclick="connectEthereum()">
+          Connect MetaMask
+        </button>
+        <div
+          id="ethAddress"
+          style="font-family: monospace; margin: 8px 0"></div>
+        <div
+          id="ethResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Solana Tab -->
+    <div
+      id="tab-solana"
+      class="tab-content">
+      <div class="card">
+        <h3>🟣 Solana — Sign-In with Phantom</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">Connect Phantom or Solflare wallet.</p>
+        <button
+          class="btn-sol"
+          onclick="connectSolana()">
+          Connect Phantom
+        </button>
+        <div
+          id="solAddress"
+          style="font-family: monospace; margin: 8px 0"></div>
+        <div
+          id="solResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Bitcoin Tab -->
+    <div
+      id="tab-bitcoin"
+      class="tab-content">
+      <div class="card">
+        <h3>🟠 Bitcoin — Message Signing</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">Connect Xverse, Unisat, or Leather wallet.</p>
+        <button
+          class="btn-btc"
+          onclick="connectBitcoin()">
+          Connect Bitcoin Wallet
+        </button>
+        <div
+          id="btcAddress"
+          style="font-family: monospace; margin: 8px 0"></div>
+        <div
+          id="btcResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <!-- Manual Tab -->
+    <div
+      id="tab-manual"
+      class="tab-content">
+      <div class="card">
+        <h3>🔧 Manual Testing (No Wallet Extension Needed)</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px">
+          Step 1: Get nonce. Step 2: Sign externally. Step 3: Verify.
+        </p>
+        <div class="row">
+          <div>
+            <label>Chain</label>
+            <select id="manualChain">
+              <option value="ethereum">Ethereum</option>
+              <option value="solana">Solana</option>
+              <option value="bitcoin">Bitcoin</option>
+            </select>
+          </div>
+          <div>
+            <label>Address</label>
+            <input
+              id="manualAddress"
+              placeholder="0x... or base58..." />
+          </div>
+        </div>
+        <button
+          class="btn-primary"
+          onclick="manualNonce()">
+          1. Get Nonce + Message
+        </button>
+        <label>Message to Sign (copy this)</label>
+        <textarea
+          id="manualMessage"
+          readonly></textarea>
+        <label>Signature (paste signed result)</label>
+        <input
+          id="manualSignature"
+          placeholder="0x... or base58 signature" />
+        <button
+          class="btn-success"
+          onclick="manualVerify()">
+          2. Verify Signature
+        </button>
+        <div
+          id="manualResult"
+          class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      let accessToken = '',
+        refreshToken = '';
+
+      function switchTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      async function api(url, opts = {}) {
+        const headers = { ...opts.headers };
+        if (opts.body) headers['Content-Type'] = 'application/json';
+        if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+        if (refreshToken) headers['X-Refresh-Token'] = refreshToken;
+        const res = await fetch(url, { ...opts, headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+        const na = res.headers.get('authorization'),
+          nr = res.headers.get('x-refresh-token');
+        if (na) accessToken = na.replace('Bearer ', '');
+        if (nr) refreshToken = nr;
+        return { status: res.status, data: await res.json().catch(() => null) };
+      }
+
+      function show(id, data) {
+        const el = document.getElementById(id);
+        el.style.display = 'block';
+        el.textContent = JSON.stringify(data, null, 2);
+      }
+      function setAuth(t) {
+        document.getElementById('authStatus').textContent = t;
+      }
+      function setStatus(cls, msg) {
+        const s = document.getElementById('globalStatus');
+        s.className = 'status ' + cls;
+        s.textContent = msg;
+      }
+
+      async function checkMe() {
+        const r = await api('/api/me');
+        show('authResult', r.data);
+      }
+      async function listWallets() {
+        const r = await api('/api/web3/wallets');
+        show('authResult', r.data);
+      }
+      async function doLogout() {
+        await api('/api/logout', { method: 'POST' });
+        accessToken = '';
+        refreshToken = '';
+        setAuth('Not connected');
+      }
+
+      // ─── Ethereum (MetaMask) ───
+      async function connectEthereum() {
+        try {
+          if (!window.ethereum) {
+            show('ethResult', { error: 'MetaMask not detected. Install MetaMask or use Manual tab.' });
+            return;
+          }
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const address = accounts[0];
+          document.getElementById('ethAddress').textContent = 'Address: ' + address;
+
+          // Get nonce + SIWE message
+          const nonceRes = await api('/api/web3/nonce', { method: 'POST', body: { chain: 'ethereum', address } });
+          if (nonceRes.status >= 300) {
+            show('ethResult', nonceRes.data);
+            return;
+          }
+          const { message } = nonceRes.data.data;
+
+          // Sign with MetaMask
+          const signature = await window.ethereum.request({ method: 'personal_sign', params: [message, address] });
+
+          // Verify
+          const verifyRes = await api('/api/web3/verify', {
+            method: 'POST',
+            body: { chain: 'ethereum', address, message, signature },
+          });
+          show('ethResult', verifyRes.data);
+          if (verifyRes.status < 300) {
+            setAuth('✅ Ethereum: ' + address.slice(0, 6) + '...' + address.slice(-4));
+            setStatus('ok', 'Ethereum wallet connected!');
+          }
+        } catch (err) {
+          show('ethResult', { error: err.message });
+        }
+      }
+
+      // ─── Solana (Phantom) ───
+      async function connectSolana() {
+        try {
+          const phantom = window.solana || window.phantom?.solana;
+          if (!phantom?.isPhantom) {
+            show('solResult', { error: 'Phantom not detected. Install Phantom or use Manual tab.' });
+            return;
+          }
+          const resp = await phantom.connect();
+          const address = resp.publicKey.toString();
+          document.getElementById('solAddress').textContent = 'Address: ' + address;
+
+          const nonceRes = await api('/api/web3/nonce', { method: 'POST', body: { chain: 'solana', address } });
+          if (nonceRes.status >= 300) {
+            show('solResult', nonceRes.data);
+            return;
+          }
+          const { message } = nonceRes.data.data;
+
+          const encoded = new TextEncoder().encode(message);
+          const signed = await phantom.signMessage(encoded, 'utf8');
+          // Convert Uint8Array signature to base58
+          const signature = base58encode(signed.signature);
+
+          const verifyRes = await api('/api/web3/verify', {
+            method: 'POST',
+            body: { chain: 'solana', address, message, signature },
+          });
+          show('solResult', verifyRes.data);
+          if (verifyRes.status < 300) {
+            setAuth('✅ Solana: ' + address.slice(0, 4) + '...' + address.slice(-4));
+            setStatus('ok', 'Solana wallet connected!');
+          }
+        } catch (err) {
+          show('solResult', { error: err.message });
+        }
+      }
+
+      // ─── Bitcoin (Xverse/Unisat) ───
+      async function connectBitcoin() {
+        try {
+          let address, signFn;
+
+          if (window.unisat) {
+            const accounts = await window.unisat.requestAccounts();
+            address = accounts[0];
+            signFn = msg => window.unisat.signMessage(msg);
+          } else if (window.btc) {
+            // Xverse/Leather
+            const resp = await window.btc.request('getAddresses');
+            address = resp.result.addresses[0].address;
+            signFn = async msg => {
+              const r = await window.btc.request('signMessage', { message: msg, address });
+              return r.result.signature;
+            };
+          } else {
+            show('btcResult', { error: 'No Bitcoin wallet detected. Install Xverse or Unisat, or use Manual tab.' });
+            return;
+          }
+
+          document.getElementById('btcAddress').textContent = 'Address: ' + address;
+
+          const nonceRes = await api('/api/web3/nonce', { method: 'POST', body: { chain: 'bitcoin', address } });
+          if (nonceRes.status >= 300) {
+            show('btcResult', nonceRes.data);
+            return;
+          }
+          const { message } = nonceRes.data.data;
+
+          const signature = await signFn(message);
+
+          const verifyRes = await api('/api/web3/verify', {
+            method: 'POST',
+            body: { chain: 'bitcoin', address, message, signature },
+          });
+          show('btcResult', verifyRes.data);
+          if (verifyRes.status < 300) {
+            setAuth('✅ Bitcoin: ' + address.slice(0, 6) + '...' + address.slice(-4));
+            setStatus('ok', 'Bitcoin wallet connected!');
+          }
+        } catch (err) {
+          show('btcResult', { error: err.message });
+        }
+      }
+
+      // ─── Manual ───
+      async function manualNonce() {
+        const r = await api('/api/web3/nonce', {
+          method: 'POST',
+          body: {
+            chain: document.getElementById('manualChain').value,
+            address: document.getElementById('manualAddress').value,
+          },
+        });
+        show('manualResult', r.data);
+        if (r.data?.data?.message) document.getElementById('manualMessage').value = r.data.data.message;
+      }
+      async function manualVerify() {
+        const r = await api('/api/web3/verify', {
+          method: 'POST',
+          body: {
+            chain: document.getElementById('manualChain').value,
+            address: document.getElementById('manualAddress').value,
+            message: document.getElementById('manualMessage').value,
+            signature: document.getElementById('manualSignature').value,
+          },
+        });
+        show('manualResult', r.data);
+        if (r.status < 300)
+          setAuth('✅ Connected: ' + document.getElementById('manualAddress').value.slice(0, 8) + '...');
+      }
+
+      // Base58 encoder (for Solana signature)
+      function base58encode(bytes) {
+        const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        let result = '',
+          num = BigInt(
+            '0x' +
+              Array.from(bytes)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join(''),
+          );
+        while (num > 0n) {
+          result = ALPHABET[Number(num % 58n)] + result;
+          num = num / 58n;
+        }
+        for (const b of bytes) {
+          if (b === 0) result = '1' + result;
+          else break;
+        }
+        return result;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "@auth-guide/web3-auth-fastify",
+  "version": "1.0.0",
+  "description": "Blockchain & Web3 Authentication — Ethereum SIWE, Solana SIWS, Bitcoin message signing with Fastify",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test *.test.js"
+  },
+  "dependencies": {
+    "@auth-guide/shared": "workspace:*"
+  }
+}

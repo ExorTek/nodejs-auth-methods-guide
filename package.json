@@ -23,7 +23,9 @@
     "mfa:express": "yarn workspace @auth-guide/mfa-express dev",
     "mfa:fastify": "yarn workspace @auth-guide/mfa-fastify dev",
     "pwd:express": "yarn workspace @auth-guide/passwordless-express dev",
-    "pwd:fastify": "yarn workspace @auth-guide/passwordless-fastify dev"
+    "pwd:fastify": "yarn workspace @auth-guide/passwordless-fastify dev",
+    "web3:express": "yarn workspace @auth-guide/web3-auth-express dev",
+    "web3:fastify": "yarn workspace @auth-guide/web3-auth-fastify dev"
   },
   "workspaces": [
     "apps/*/*",
@@ -32,9 +34,13 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
+    "@solana/web3.js": "^1.98.4",
     "axios": "^1.13.5",
+    "bitcoinjs-message": "^2.2.0",
+    "bs58": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
     "express": "^5.2.1",
     "fastify": "^5.7.2",
     "helmet": "^8.1.0",
@@ -44,7 +50,9 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "qrcode": "^1.5.4",
-    "redis": "^5.10.0",
+    "redis": "^5.11.0",
+    "siwe": "^3.0.0",
+    "tweetnacl": "^1.0.3",
     "twilio": "^5.12.2"
   },
   "devDependencies": {
