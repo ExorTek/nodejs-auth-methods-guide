@@ -13,7 +13,7 @@ A comprehensive **8-article series** covering every major authentication method 
 | 4   | Enterprise SSO (OIDC & SAML)      | Express + Fastify | [Read](https://medium.com/@mem3t/enterprise-sso-kurumsal-dünyanın-giriş-kapısı-oidc-saml-2-0-dfd49162f019)             | [Code](apps/enterprise-sso/)     | ✅     |
 | 5   | Multi-Factor Authentication       | Express + Fastify | [Read](https://medium.com/@mem3t/multi-factor-authentication-%C5%9Fifrenin-%C3%B6tesinde-g%C3%BCvenlik-2265216ba18d)   | [Code](apps/mfa/)                | ✅     |
 | 6   | Passwordless (WebAuthn, Passkeys) | Express + Fastify | [Read](https://medium.com/@mem3t/passwordless-authentication-şifreler-tarih-oluyor-216b717d3269)                       | [Code](apps/passwordless/)       | ✅     |
-| 7   | Blockchain & Web3 Auth            | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
+| 7   | Blockchain & Web3 Auth            | Express + Fastify | [Read](https://medium.com/@mem3t/blockchain-web3-authentication-cüzdanınız-yeni-kimliğiniz-68341c8ff7ef)               | [Code](apps/web3-auth/)          | ✅     |
 | 8   | API & Service-to-Service          | Express + Fastify | —                                                                                                                      | —                                | ⬜     |
 
 ## 🏗️ Repository Structure
@@ -28,7 +28,7 @@ auth-methods-guide/
 │   ├── enterprise-sso/          # Article 4
 │   ├── mfa/                     # Article 5
 │   ├── passwordless/            # Article 6
-│   ├── web3-auth/               # Article 7 (coming soon)
+│   ├── web3-auth/               # Article 7
 │   ├── service-auth/            # Article 8 (coming soon)
 │   └── ...
 ├── package.json                 # Workspace root
